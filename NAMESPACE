@@ -1,0 +1,9 @@
+useDynLib(mBvs) 
+
+export(mvnBvs)
+
+S3method(print, mvnBvs)
+S3method(print, summ.mvnBvs)
+S3method(summary, mvnBvs)
+
+importFrom("stats", "median", "quantile", "sd", "var", "as.formula", "model.frame", "model.matrix")

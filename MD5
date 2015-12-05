@@ -1,0 +1,17 @@
+4fbd97f0856e83eb9a83a42b21722513 *DESCRIPTION
+6734055f6408ba044a11ab0f05acf965 *NAMESPACE
+347c29782554d083b8961381708c6918 *R/methods.R
+e7a994f3a9cf6f5e4b3ce9c77eebfd50 *R/mvnBvs.R
+23a9631825e3444a9e5ffc16495f41c0 *data/simData.rda
+d688e0c5d712245188eeeb0f83852bfc *man/mBvs-package.Rd
+0b523a026e86cb2bb746820461aced93 *man/methods.Rd
+4588e163d9c90be6a14add8b477d3a85 *man/mvnBvs.Rd
+f70edcbb837ba9fc63838805d32baf0d *man/simData.Rd
+1bb5b838d0339429e8527aa80cd28d5c *src/MBVSfa.c
+fffa4abfbffa366ad2aa7b9abd420c6a *src/MBVSfa.h
+de0a36f47b71f7414784a7c00b19dcd1 *src/MBVSfa_Updates.c
+427be45747458eb3905529aced8e1330 *src/MBVSus.c
+317ea13877844556cb8a176c56442243 *src/MBVSus.h
+ebf3144aa8693c22cad9f1f795221460 *src/MBVSus_Updates.c
+0c7312ab3532974e1315adfb0c91dc4e *src/Makevars
+15533bc1ef168646f23d2fa1abd55f0b *src/Utilities.c
