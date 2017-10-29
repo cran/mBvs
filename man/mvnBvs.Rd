@@ -44,7 +44,7 @@ mvnBvs(Y, lin.pred, data, model = "unstructured", hyperParams, startValues, mcmc
 	\code{tuning} (a list containing numeric values relevant to tuning parameters for specific updates in Metropolis-Hastings algorithm: 
 	\code{mhProp_beta_var}, variance of the proposal density for \eqn{B}; \code{mhrho_prop}, degrees of freedom of the inverse-Wishart proposal density for \eqn{\Sigma} in the unstructured model; 
 	\code{mhPsi_prop}, scale matrix of inverse-Wishart proposal density for \eqn{\Sigma} in the unstructured model; 
-	\code{mhProp_lambda_var}, variance of the proposal density for \eqn{\lambda} in the factor-analytic model.
+	\code{mhProp_lambda_var}, variance of the proposal density for \eqn{\lambda} in the factor-analytic model.)
 	See Examples below.
 }
 }
@@ -55,9 +55,9 @@ mvnBvs(Y, lin.pred, data, model = "unstructured", hyperParams, startValues, mcmc
 \code{mvnBvs} returns an object of class \code{mvnBvs}. \cr
 }
 \references{
-Lee, K. H., Tadesse, M. G., Baccarelli, A. A., Schwartz J., and Coull, B. A. (2015), 
-Multivariate Bayesian Variable Selection Exploiting Dependence Structure Among Outcomes: 
-Application to Air Pollution Effects on DNA Methylation, \emph{submitted}. \cr
+Lee, K. H., Tadesse, M. G., Baccarelli, A. A., Schwartz J., and Coull, B. A. (2016), 
+Multivariate Bayesian variable selection exploiting dependence structure among outcomes: 
+application to air pollution effects on DNA methylation, \emph{Biometrics}, Volume 73, Issue 1, pages 232-241. \cr
 }
 \author{
 Kyu Ha Lee, Mahlet G. Tadesse, Brent A. Coull \cr
@@ -76,9 +76,9 @@ Maintainer: Kyu Ha Lee <klee@hsph.harvard.edu>
 \examples{
 
 # loading a data set	
-data(simData)
-Y <- simData$Y
-data <- simData$X
+data(simData_cont)
+Y <- simData_cont$Y
+data <- simData_cont$X
 form1 <- as.formula( ~ cov.1+cov.2)
 form2 <- as.formula( ~ 1)
 lin.pred <- list(form1, form2)
@@ -118,7 +118,7 @@ hyperParams <- list(eta=eta, v=v, omega=omega, beta0=common.beta0,
 
 ## Setting for the overall run
 ##
-numReps    <- 100
+numReps    <- 50
 thin       <- 1
 burninPerc <- 0.5
 
@@ -204,3 +204,6 @@ summ.fit.fa
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{multivariate Bayesian variable selection}
+\keyword{multivariate continuous data}
+
+

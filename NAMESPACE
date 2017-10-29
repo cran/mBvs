@@ -1,9 +1,14 @@
-useDynLib(mBvs) 
+useDynLib(mBvs, .registration = TRUE) 
 
 export(mvnBvs)
+export(mzipBvs)
 
 S3method(print, mvnBvs)
+S3method(print, mzipBvs)
 S3method(print, summ.mvnBvs)
+S3method(print, summ.mzipBvs)
 S3method(summary, mvnBvs)
+S3method(summary, mzipBvs)
 
-importFrom("stats", "median", "quantile", "sd", "var", "as.formula", "model.frame", "model.matrix")
+importFrom("stats", "median", "rgamma", "quantile", "sd", "var", "as.formula", "model.frame", "model.matrix")
+

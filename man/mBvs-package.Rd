@@ -3,34 +3,38 @@
 \alias{mBvs}
 \docType{package}
 \title{
-Multivariate Bayesian variable selection method exploiting dependence among outcomes
+Bayesian Variable Selection Methods for Multivariate Data
 }
 \description{
-   The package provides functions to perform Bayesian variable selection for data with continuous multivariate responses and multiple covariates.
+Bayesian variable selection methods for data with multivariate responses and multiple covariates. The package contains implementations of multivariate Bayesian variable selection methods for continuous data and zero-inflated count data.
 }
 \details{
 	The package includes the following function:
 \tabular{ll}{
-\code{mvnBvs} \tab Bayesian variable selection for data with continuous multivariate responses  \cr
+\code{mvnBvs} \tab Bayesian variable selection for data with multivariate continuous responses  \cr
+\code{mzipBvs} \tab Bayesian variable selection for data with multivariate zero-inflated count responses  \cr
 }
 \tabular{ll}{
 Package: \tab mBvs\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
-Date: \tab 2015-12-04\cr
+Version: \tab 1.1\cr
+Date: \tab 2017-10-28\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }
 
 }
 \author{
-Kyu Ha Lee, Mahlet G. Tadesse, Brent A. Coull \cr
+Kyu Ha Lee, Mahlet G. Tadesse, Brent A. Coull, Jacqueline R. Starr \cr
 Maintainer: Kyu Ha Lee <klee@hsph.harvard.edu>
 }
 \references{
-Lee, K. H., Tadesse, M. G., Baccarelli, A. A., Schwartz J., and Coull, B. A. (2015), 
-Multivariate Bayesian Variable Selection Exploiting Dependence Structure Among Outcomes: 
-Application to Air Pollution Effects on DNA Methylation, \emph{submitted}. \cr
+Lee, K. H., Tadesse, M. G., Baccarelli, A. A., Schwartz J., and Coull, B. A. (2016), 
+Multivariate Bayesian variable selection exploiting dependence structure among outcomes: 
+application to air pollution effects on DNA methylation, \emph{Biometrics}, Volume 73, Issue 1, pages 232-241. \cr
+
+Lee, K. H., Coull, B. A., Moscicki, A.-B., Paster, B. J., Starr, J. R. (2017+), 
+Bayesian variable selection for multivariate zero-inflated models: application to microbiome count data, \emph{under review}. \cr
 }
 
 \keyword{ package }

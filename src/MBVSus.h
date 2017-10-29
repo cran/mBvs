@@ -1,6 +1,4 @@
 
-
-
 extern void matrixInv(gsl_matrix *X, gsl_matrix *Xinv);
 
 extern void c_colSums(gsl_matrix *X, gsl_vector *v);
@@ -21,12 +19,9 @@ extern double c_max(double value1,
 extern void c_solve(gsl_matrix *M,
                     gsl_matrix *Minv);
 
-
-
 extern void c_quadform_vMv(gsl_vector *v,
                            gsl_matrix *Minv,
                            double     *value);
-
 
 extern void c_quadform_vMu(gsl_vector *v,
                            gsl_matrix *Minv,
@@ -34,8 +29,6 @@ extern void c_quadform_vMu(gsl_vector *v,
                            double     *value);
 
 extern double c_det(gsl_matrix *A);
-
-
 
 extern void updateRPus(int *q_adj,
                      gsl_matrix *Y,
@@ -51,9 +44,6 @@ extern void updateRPus(int *q_adj,
                      double eta,
                      gsl_matrix *rwbetaVar,
                      gsl_matrix *accept_B);
-
-
-
 
 extern void updateIPus(gsl_matrix *Y,
                      gsl_matrix *X,
@@ -80,33 +70,19 @@ extern void updateCPus(int *q_adj,
                      double rho_prop,
                      int *accept_Sigma);
 
-
-
-
-
-
 extern void c_rigamma(double *sample,
                       double alpha,
                       double beta);
 
-
-
 extern void c_rmvnorm(gsl_matrix *sample,
                       gsl_vector *mean,
                       gsl_matrix *Var);
-
-
-
-
-
 
 extern void c_dmvnorm(gsl_vector *x,
                       gsl_vector *mu,
                       double     sigma,
                       gsl_matrix *AInv,
                       double     *value);
-
-
 
 extern double sumCorus_j(gsl_matrix *Sigma,
                        gsl_matrix *gamma,
@@ -119,7 +95,7 @@ extern double invLogit(double val);
 
 extern double one_invLogit(double val);
 
-extern void c_riwishart(int v,
+extern void c_riwishart(double v,
                         gsl_matrix *X_ori,
                         gsl_matrix *sample);
 

@@ -1,13 +1,13 @@
-\name{simData}
-\alias{simData}
+\name{simData_cont}
+\alias{simData_cont}
 \docType{data}
 \title{
-A simulated data set
+A simulated data set containing multivariate normal responses and continuous covariates
 }
 \description{
 A simulated data set containing multivariate normal responses and continuous covariates
 }
-\usage{data("simData")}
+\usage{data("simData_cont")}
 \format{
   a list of two data frame objects. Components include, 
   \describe{
@@ -25,7 +25,7 @@ A simulated data set containing multivariate normal responses and continuous cov
 %title
 %}
 \examples{
-data(simData)
+data(simData_cont)
 }
 \keyword{datasets}
-\keyword{multivariate Bayesian variable selection}
+\keyword{multivariate continuous data}

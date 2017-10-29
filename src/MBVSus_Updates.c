@@ -16,7 +16,6 @@
 #include "MBVSus.h"
 
 
-
 /* updating regression parameter: B, gamma */
 
 /**/
