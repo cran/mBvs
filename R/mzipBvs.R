@@ -39,18 +39,14 @@ mcmcParams)
                 p0 <- ncol(Xmat0) + ncol(Xmat.adj)
                 p1 <- ncol(Xmat1) + ncol(Xmat.adj)
                 p_adj <- ncol(Xmat.adj)
-                
-                Xmat0 <- cbind(Xmat0, Xmat.adj)
-                Xmat1 <- cbind(Xmat1, Xmat.adj)
-                
+
                 if(p_adj > 0){
-                    covNames.z = c(colnames(Xmat0), colnames(Xmat.adj))
-                    covNames.x = c(colnames(Xmat1), colnames(Xmat.adj))
+                    Xmat0 <- cbind(Xmat0, Xmat.adj)
+                    Xmat1 <- cbind(Xmat1, Xmat.adj)
                 }
-                if(p_adj == 0){
-                    covNames.z = colnames(Xmat0)
-                    covNames.x = colnames(Xmat1)
-                }
+                
+                covNames.z = c(colnames(Xmat0))
+                covNames.x = c(colnames(Xmat1))
                 
                 ###
                 gamma_beta <- temp$B
@@ -194,18 +190,14 @@ mcmcParams)
                 
                 p <- p1+p_adj
                 p0 <- p1 <- p
-                
-                Xmat0 <- cbind(Xmat0, Xmat.adj)
-                Xmat1 <- cbind(Xmat1, Xmat.adj)
-                
+
                 if(p_adj > 0){
-                    covNames.z = c(colnames(Xmat0), colnames(Xmat.adj))
-                    covNames.x = c(colnames(Xmat1), colnames(Xmat.adj))
+                    Xmat0 <- cbind(Xmat0, Xmat.adj)
+                    Xmat1 <- cbind(Xmat1, Xmat.adj)
                 }
-                if(p_adj == 0){
-                    covNames.z = colnames(Xmat0)
-                    covNames.x = colnames(Xmat1)
-                }
+                
+                covNames.z = c(colnames(Xmat0))
+                covNames.x = c(colnames(Xmat1))
                 
                 ###
                 gamma <- temp$B
@@ -335,17 +327,13 @@ mcmcParams)
             p <- p1+p_adj
             p0 <- p1 <- p
             
-            Xmat0 <- cbind(Xmat0, Xmat.adj)
-            Xmat1 <- cbind(Xmat1, Xmat.adj)
-            
             if(p_adj > 0){
-                covNames.z = c(colnames(Xmat0), colnames(Xmat.adj))
-                covNames.x = c(colnames(Xmat1), colnames(Xmat.adj))
+                Xmat0 <- cbind(Xmat0, Xmat.adj)
+                Xmat1 <- cbind(Xmat1, Xmat.adj)
             }
-            if(p_adj == 0){
-                covNames.z = colnames(Xmat0)
-                covNames.x = colnames(Xmat1)
-            }
+            
+            covNames.z = c(colnames(Xmat0))
+            covNames.x = c(colnames(Xmat1))
             
             ###
             gamma_beta <- temp$B

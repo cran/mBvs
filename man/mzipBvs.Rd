@@ -69,7 +69,7 @@ linear predictor in the count part of model.
 \value{
 \code{mzipBvs} returns an object of class \code{mzipBvs}. \cr}
 \references{
-Lee, K. H., Coull, B. A., Moscicki, A.-B., Paster, B. J., Starr, J. R. (2017+), 
+Lee, K. H., Coull, B. A., Moscicki, A.-B., Paster, B. J., Starr, J. R. (2018+), 
 Bayesian variable selection for multivariate zero-inflated models: application to microbiome count data, \emph{under review}. \cr
 }
 \author{

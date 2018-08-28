@@ -7,8 +7,6 @@
 
 print.mvnBvs <- function(x, digits=3, ...)
 {
-	nChain = length(x)-1
-    
     nChain = length(x)-1
     p <- dim(x$chain1$B.p)[1]
     q <- dim(x$chain1$B.p)[2]
@@ -104,8 +102,6 @@ print.mvnBvs <- function(x, digits=3, ...)
 
 print.mzipBvs <- function(x, digits=3, ...)
 {
-    nChain = length(x)-1
-    
     nChain = length(x)-1
     p_x <- dim(x$chain1$B.p)[1]
     p_z <- dim(x$chain1$A.p)[1]
