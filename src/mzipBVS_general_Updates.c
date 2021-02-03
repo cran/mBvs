@@ -60,7 +60,7 @@ void mzipBVS_general_updateRP_beta(int *p_adj,
     gsl_matrix *gamma_prop = gsl_matrix_calloc(p, q);
     gsl_matrix *B_prop = gsl_matrix_calloc(p, q);
     
-    int numUpdate = 5;
+    int numUpdate = 20;
     if(numUpdate > q)
     {
         numUpdate = q;
@@ -535,7 +535,7 @@ void mzipBVS_general_updateRP_alpha(int *p_adj,
     gsl_vector *meanW = gsl_vector_calloc(q);
     gsl_vector *meanW_prop = gsl_vector_calloc(q);
     
-    int numUpdate = 5;
+    int numUpdate = 20;
     if(numUpdate > q)
     {
         numUpdate = q;

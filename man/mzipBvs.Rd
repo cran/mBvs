@@ -23,7 +23,7 @@ a list containing three formula objects: the first formula specifies the \eqn{p_
 	a data.frame containing the variables named in the formulas in \code{lin.pred}.
 }
   \item{model}{
-a character that specifies the type of model: A generalized multivariate Bayesian variable selection method of Lee et al.(2017+) can be implemented by setting \code{model="generalized"}. A simpler model that assumes one common variable selection indicator (\eqn{\gamma_{j,k}=\delta_{j,k}}) and the same covariance pattern (\eqn{R=R_V}) for two model parts can be used by setting \code{model="restricted1"}. iii) Another simpler model that assumes the same covariance pattern (\eqn{R=R_V}) but separate variable selection indicators for the binary and count parts of the model can be implemented by setting \code{model="restricted2"}.
+a character that specifies the type of model: A generalized multivariate Bayesian variable selection method of Lee et al.(2018) can be implemented by setting \code{model="generalized"}. A simpler model that assumes one common variable selection indicator (\eqn{\gamma_{j,k}=\delta_{j,k}}) and the same covariance pattern (\eqn{R=R_V}) for two model parts can be used by setting \code{model="restricted1"}. iii) Another simpler model that assumes the same covariance pattern (\eqn{R=R_V}) but separate variable selection indicators for the binary and count parts of the model can be implemented by setting \code{model="restricted2"}.
 }
   \item{offset}{
 an optional numeric vector with an a priori known component to be included as the
@@ -69,12 +69,12 @@ linear predictor in the count part of model.
 \value{
 \code{mzipBvs} returns an object of class \code{mzipBvs}. \cr}
 \references{
-Lee, K. H., Coull, B. A., Moscicki, A.-B., Paster, B. J., Starr, J. R. (2018+), 
-Bayesian variable selection for multivariate zero-inflated models: application to microbiome count data, \emph{under review}. \cr
+Lee, K. H., Coull, B. A., Moscicki, A.-B., Paster, B. J., Starr, J. R. (2020),
+Bayesian variable selection for multivariate zero-inflated models: application to microbiome count data, \emph{Biostatistics}, Volume 21, Issue 3, Pages 499-517. \cr
 }
 \author{
 Kyu Ha Lee, Brent A. Coull, Jacqueline R. Starr \cr
-Maintainer: Kyu Ha Lee <klee@hsph.harvard.edu>
+Maintainer: Kyu Ha Lee <klee15239@gmail.com>
 }
 %\note{
 %%  ~~further notes~~

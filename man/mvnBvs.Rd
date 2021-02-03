@@ -55,13 +55,13 @@ mvnBvs(Y, lin.pred, data, model = "unstructured", hyperParams, startValues, mcmc
 \code{mvnBvs} returns an object of class \code{mvnBvs}. \cr
 }
 \references{
-Lee, K. H., Tadesse, M. G., Baccarelli, A. A., Schwartz J., and Coull, B. A. (2016), 
+Lee, K. H., Tadesse, M. G., Baccarelli, A. A., Schwartz J., and Coull, B. A. (2017),
 Multivariate Bayesian variable selection exploiting dependence structure among outcomes: 
 application to air pollution effects on DNA methylation, \emph{Biometrics}, Volume 73, Issue 1, pages 232-241. \cr
 }
 \author{
 Kyu Ha Lee, Mahlet G. Tadesse, Brent A. Coull \cr
-Maintainer: Kyu Ha Lee <klee@hsph.harvard.edu>
+Maintainer: Kyu Ha Lee <klee15239@gmail.com>
 
 }
 %\note{

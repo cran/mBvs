@@ -17,8 +17,8 @@ Bayesian variable selection methods for data with multivariate responses and mul
 \tabular{ll}{
 Package: \tab mBvs\cr
 Type: \tab Package\cr
-Version: \tab 1.3\cr
-Date: \tab 2018-8-27\cr
+Version: \tab 1.4\cr
+Date: \tab 2021-2-3\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }
@@ -26,15 +26,15 @@ LazyLoad: \tab yes\cr
 }
 \author{
 Kyu Ha Lee, Mahlet G. Tadesse, Brent A. Coull, Jacqueline R. Starr \cr
-Maintainer: Kyu Ha Lee <klee@forsyth.org>
+Maintainer: Kyu Ha Lee <klee15239@gmail.com>
 }
 \references{
-Lee, K. H., Tadesse, M. G., Baccarelli, A. A., Schwartz J., and Coull, B. A. (2016), 
+Lee, K. H., Tadesse, M. G., Baccarelli, A. A., Schwartz J., and Coull, B. A. (2017), 
 Multivariate Bayesian variable selection exploiting dependence structure among outcomes: 
 application to air pollution effects on DNA methylation, \emph{Biometrics}, Volume 73, Issue 1, pages 232-241. \cr
 
-Lee, K. H., Coull, B. A., Moscicki, A.-B., Paster, B. J., Starr, J. R. (2018+), 
-Bayesian variable selection for multivariate zero-inflated models: application to microbiome count data, \emph{under review}. \cr
+Lee, K. H., Coull, B. A., Moscicki, A.-B., Paster, B. J., Starr, J. R. (2020),
+Bayesian variable selection for multivariate zero-inflated models: application to microbiome count data, \emph{Biostatistics}, Volume 21, Issue 3, Pages 499-517 \cr
 }
 
 \keyword{ package }
@@ -44,3 +44,5 @@ Bayesian variable selection for multivariate zero-inflated models: application t
 %\examples{
 %## empty for now
 %}
+
+
