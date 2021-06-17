@@ -1,11 +1,11 @@
-9beef3347d2ded576d9a253a4aa9d17a *DESCRIPTION
+82038b9c60dfc848b24618230025908f *DESCRIPTION
 4131508a9f7a5ec291daebc334c688b5 *NAMESPACE
-e9ccba05fae56291829d4fc3b8329e3c *R/methods.R
+acbc0e5d5c31c052a246bab447839b6f *R/methods.R
 e7a994f3a9cf6f5e4b3ce9c77eebfd50 *R/mvnBvs.R
 437650a6a34f9ea0dffceab2116ee4e4 *R/mzipBvs.R
 eda446006d5d330ae80fa1ae69c1fb3e *data/simData_cont.rda
 7c0a10b6749e4ddb504d618fdcf3a11d *data/simData_mzip.rda
-8eb1e0d0bbaa0d0c2fd056de183710b9 *man/mBvs-package.Rd
+da1a209adad756e44cee2c59f931e389 *man/mBvs-package.Rd
 d02ab76cc74b1fa7fd87091a294fa400 *man/methods.Rd
 a9d703b6f53bde3308fcaa79fd139a05 *man/mvnBvs.Rd
 89268a33cc79c5fc29cdc0e3b8eceb10 *man/mzipBvs.Rd

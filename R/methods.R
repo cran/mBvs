@@ -14,7 +14,7 @@ print.mvnBvs <- function(x, digits=3, ...)
     nS <- dim(x$chain1$B.p)[3]
     value <- list(model=class(x)[2])
     cov.names <- x$chain1$covNames
-    out.names <- colnames(matrix(x$chain1$B.p[,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
+    out.names <- colnames(matrix(x$chain1$B.p[1,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
     
     cat("\nMultivariate Bayesian Variable Selection \n")
     nChain = x$setup$nChain
@@ -111,7 +111,7 @@ print.mzipBvs <- function(x, digits=3, ...)
     value <- list(model=class(x)[2])
     cov.names.z <- x$chain1$covNames.z
     cov.names.x <- x$chain1$covNames.x
-    out.names <- colnames(matrix(x$chain1$B.p[,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
+    out.names <- colnames(matrix(x$chain1$B.p[1,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
     
     cat("\nMultivariate Bayesian Variable Selection \n")
     nChain = x$setup$nChain
@@ -291,7 +291,7 @@ summary.mvnBvs <- function(object, digits=3, ...)
     nS <- dim(x$chain1$B.p)[3]
     value <- list(model=class(x)[2])
     cov.names <- x$chain1$covNames
-    out.names <- colnames(matrix(x$chain1$B.p[,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
+    out.names <- colnames(matrix(x$chain1$B.p[1,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
 
     # estimates
     ##
@@ -462,7 +462,7 @@ summary.mzipBvs <- function(object, digits=3, ...)
     value <- list(model=class(x)[2])
     cov.names.z <- x$chain1$covNames.z
     cov.names.x <- x$chain1$covNames.x
-    out.names <- colnames(matrix(x$chain1$B.p[,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
+    out.names <- colnames(matrix(x$chain1$B.p[1,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
 
     # estimates
     ##
