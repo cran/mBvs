@@ -42,7 +42,7 @@ void updateRPus(int *q_adj,
     double logLH;
     double logLH_prop;
     double sumGam;
-    double p_add, p_del, p_swap;
+    double p_add, p_del;
     
     int u, i, j, k, l, m, ii, kk, lInx, count, count_rev, move, putInx;
     int refine_q, refine_p;
@@ -53,7 +53,6 @@ void updateRPus(int *q_adj,
 
     p_add = (double) 1/3;
     p_del = (double) 1/3;
-    p_swap = 1-(p_add+p_del);
     
     gsl_matrix *gamma_prop = gsl_matrix_calloc(q, p);
     gsl_matrix *B_prop = gsl_matrix_calloc(q, p);

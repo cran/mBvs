@@ -16,6 +16,9 @@
 #include "gsl/gsl_sort_vector.h"
 #include "gsl/gsl_heapsort.h"
 
+#include "gsl/gsl_rng.h"
+#include "gsl/gsl_randist.h"
+
 #include "R.h"
 #include "Rmath.h"
 
@@ -48,6 +51,14 @@ void MBVSfamcmc(double Data[],
     time_t now;
     
     int i, j, M;
+    
+    const gsl_rng_type * TT;
+    gsl_rng * rr;
+    
+    gsl_rng_env_setup();
+    
+    TT = gsl_rng_default;
+    rr = gsl_rng_alloc(TT);
     
     /* Data */
     
@@ -216,6 +227,8 @@ void MBVSfamcmc(double Data[],
             R_ProcessEvents();
         }
     }
+    
+    gsl_rng_free(rr);
 
     PutRNGstate();
     return;

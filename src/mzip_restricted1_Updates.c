@@ -48,7 +48,7 @@ void mzipBVS_restricted1_updateRP(int *p_adj,
     double logR, choice, sumG;
     double logLH, logLH_prop, logPrior, logPrior_prop, logProp_new, logProp;
     double sumGam;
-    double p_add, p_del, p_swap;
+    double p_add, p_del;
     double tempB, tempB_prop, xbeta, xbeta_prop, scale;
     
     int u, i, j, jj, k, l, m, ii, kk, kkk, lInx, count, count_rev, move, putInx;
@@ -61,7 +61,6 @@ void mzipBVS_restricted1_updateRP(int *p_adj,
     
     p_add = (double) 1/3;
     p_del = (double) 1/3;
-    p_swap = 1-(p_add+p_del);
     
     gsl_matrix *gamma_prop = gsl_matrix_calloc(p, q);
     gsl_matrix *B_prop = gsl_matrix_calloc(p, q);
@@ -353,8 +352,8 @@ void mzipBVS_restricted1_updateRP(int *p_adj,
             
             logProp_new = dnorm(beta_prop, gsl_matrix_get(updateNonzB, l, jj), sqrt(beta_prop_var), 1);
             logProp_new += dnorm(alpha_prop, gsl_matrix_get(updateNonzA, l, jj), sqrt(alpha_prop_var), 1);
-            logProp = dnorm(gsl_matrix_get(updateNonzB, l, jj), beta_prop, sqrt(beta_prop_var), 1);
-            logProp += dnorm(gsl_matrix_get(updateNonzA, l, jj), alpha_prop, sqrt(alpha_prop_var), 1);
+            logProp = dnorm(gsl_matrix_get(updateNonzB, m, jj), beta_prop, sqrt(beta_prop_var), 1);
+            logProp += dnorm(gsl_matrix_get(updateNonzA, m, jj), alpha_prop, sqrt(alpha_prop_var), 1);
             
         }
         

@@ -203,23 +203,10 @@ sigSq_alpha <- rep(1, p0)
 sigSq_beta0 <- 1
 sigSq_beta <- rep(1, p1)
 
-startValues.gen <- vector("list", 2)
-startValues.gen[[1]] <- list(B=B, A=A, V=V, W=W, beta0=beta0, alpha0=alpha0, R=R,
+startValues.gen <- list(B=B, A=A, V=V, W=W, beta0=beta0, alpha0=alpha0, R=R,
 sigSq_alpha0=sigSq_alpha0,
 sigSq_alpha=sigSq_alpha, sigSq_beta0=sigSq_beta0, sigSq_beta=sigSq_beta, Sigma_V=Sigma_V)
 
-B <- matrix(-0.1, p1, q, byrow = T)
-A <- matrix(-0.1, p0, q, byrow = T)
-
-V <- matrix(rnorm(n*q, 0, 0.1), n, q)
-W <- matrix(rnorm(n*q, 0, 0.1), n, q)
-
-Sigma_V    <- matrix(0.1, q, q)
-diag(Sigma_V) <- 1.1
-
-startValues.gen[[2]] <- list(B=B, A=A, V=V, W=W, beta0=beta0, alpha0=alpha0, R=R,
-sigSq_alpha0=sigSq_alpha0,
-sigSq_alpha=sigSq_alpha, sigSq_beta0=sigSq_beta0, sigSq_beta=sigSq_beta, Sigma_V=Sigma_V)
 
 ###################################
 ## Fitting the generalized model ##

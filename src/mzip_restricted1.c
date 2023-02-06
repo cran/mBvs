@@ -493,6 +493,9 @@ void mzip_restricted1_mcmc(double Ymat[],
             R_ProcessEvents();
         }
     }
+    
+    gsl_rng_free(rr);
+    
     PutRNGstate();
     return;
 }

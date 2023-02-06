@@ -7,17 +7,15 @@
 
 print.mvnBvs <- function(x, digits=3, ...)
 {
-    nChain = length(x)-1
-    p <- dim(x$chain1$B.p)[1]
-    q <- dim(x$chain1$B.p)[2]
+    p <- dim(x$B.p)[1]
+    q <- dim(x$B.p)[2]
     
-    nS <- dim(x$chain1$B.p)[3]
+    nS <- dim(x$B.p)[3]
     value <- list(model=class(x)[2])
-    cov.names <- x$chain1$covNames
-    out.names <- colnames(matrix(x$chain1$B.p[1,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
+    cov.names <- x$covNames
+    out.names <- colnames(matrix(x$B.p[1,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
     
     cat("\nMultivariate Bayesian Variable Selection \n")
-    nChain = x$setup$nChain
     
     if(class(x)[2] == "factor-analytic")
     {
@@ -30,8 +28,6 @@ print.mvnBvs <- function(x, digits=3, ...)
         cat("\nCovariance Structure: Unstructured \n")
     }
     ##
-    cat("\nNumber of chains:    ", nChain,"\n")
-    ##
     cat("Number of scans:     ", x$setup$numReps,"\n")
     ##
     cat("Thinning:            ", x$setup$thin,"\n")
@@ -41,18 +37,10 @@ print.mvnBvs <- function(x, digits=3, ...)
     cat("\n#####")
     
     #B and Gamma
-    B <- array(NA, c(p,q, nS*nChain))
-    Gamma <- array(NA, c(p,q, nS*nChain))
-    B[,,1:nS] <- x$chain1$B.p
-    Gamma[,,1:nS] <- x$chain1$gamma.p
-    
-    if(nChain > 1){
-        for(i in 2:nChain){
-            nam <- paste("chain", i, sep="")
-            B[,,(nS*(i-1)+1):(nS*i)] <- x[[nam]]$B.p
-            Gamma[,,(nS*(i-1)+1):(nS*i)] <- x[[nam]]$gamma.p
-        }
-    }
+    B <- array(NA, c(p,q, nS))
+    Gamma <- array(NA, c(p,q, nS))
+    B[,,1:nS] <- x$B.p
+    Gamma[,,1:nS] <- x$gamma.p
     
     Gamma.Mean	<- apply(Gamma, c(1,2), mean)
     B.Mean <- matrix(NA, p, q)
@@ -102,19 +90,17 @@ print.mvnBvs <- function(x, digits=3, ...)
 
 print.mzipBvs <- function(x, digits=3, ...)
 {
-    nChain = length(x)-1
-    p_x <- dim(x$chain1$B.p)[1]
-    p_z <- dim(x$chain1$A.p)[1]
-    q <- dim(x$chain1$B.p)[2]
+    p_x <- dim(x$B.p)[1]
+    p_z <- dim(x$A.p)[1]
+    q <- dim(x$B.p)[2]
     
-    nS <- dim(x$chain1$B.p)[3]
+    nS <- dim(x$B.p)[3]
     value <- list(model=class(x)[2])
-    cov.names.z <- x$chain1$covNames.z
-    cov.names.x <- x$chain1$covNames.x
-    out.names <- colnames(matrix(x$chain1$B.p[1,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
+    cov.names.z <- x$covNames.z
+    cov.names.x <- x$covNames.x
+    out.names <- colnames(matrix(x$B.p[1,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
     
     cat("\nMultivariate Bayesian Variable Selection \n")
-    nChain = x$setup$nChain
     
     if(class(x)[2] == "generalized")
     {
@@ -131,8 +117,7 @@ print.mzipBvs <- function(x, digits=3, ...)
         ##
         cat("\nModel: restricted2 \n")
     }
-    ##
-    cat("\nNumber of chains:    ", nChain,"\n")
+    
     ##
     cat("Number of scans:     ", x$setup$numReps,"\n")
     ##
@@ -143,18 +128,10 @@ print.mzipBvs <- function(x, digits=3, ...)
     cat("\n#####")
     
     #B and Gamma
-    B <- array(NA, c(p_x, q, nS*nChain))
-    Gamma <- array(NA, c(p_x,q, nS*nChain))
-    B[,,1:nS] <- x$chain1$B.p
-    Gamma[,,1:nS] <- x$chain1$gamma_beta.p
-    
-    if(nChain > 1){
-        for(i in 2:nChain){
-            nam <- paste("chain", i, sep="")
-            B[,,(nS*(i-1)+1):(nS*i)] <- x[[nam]]$B.p
-            Gamma[,,(nS*(i-1)+1):(nS*i)] <- x[[nam]]$gamma_beta.p
-        }
-    }
+    B <- array(NA, c(p_x, q, nS))
+    Gamma <- array(NA, c(p_x,q, nS))
+    B[,,1:nS] <- x$B.p
+    Gamma[,,1:nS] <- x$gamma_beta.p
     
     Gamma.Mean    <- apply(Gamma, c(1,2), mean)
     B.Mean <- matrix(NA, p_x, q)
@@ -201,18 +178,10 @@ print.mzipBvs <- function(x, digits=3, ...)
     cat("\n#####")
     
     #A and Gamma_alpha
-    B <- array(NA, c(p_z, q, nS*nChain))
-    Gamma <- array(NA, c(p_z,q, nS*nChain))
-    B[,,1:nS] <- x$chain1$A.p
-    Gamma[,,1:nS] <- x$chain1$gamma_alpha.p
-    
-    if(nChain > 1){
-        for(i in 2:nChain){
-            nam <- paste("chain", i, sep="")
-            B[,,(nS*(i-1)+1):(nS*i)] <- x[[nam]]$A.p
-            Gamma[,,(nS*(i-1)+1):(nS*i)] <- x[[nam]]$gamma_alpha.p
-        }
-    }
+    B <- array(NA, c(p_z, q, nS))
+    Gamma <- array(NA, c(p_z,q, nS))
+    B[,,1:nS] <- x$A.p
+    Gamma[,,1:nS] <- x$gamma_alpha.p
     
     Gamma.Mean    <- apply(Gamma, c(1,2), mean)
     B.Mean <- matrix(NA, p_z, q)
@@ -284,31 +253,22 @@ print.mzipBvs <- function(x, digits=3, ...)
 summary.mvnBvs <- function(object, digits=3, ...)
 {
     x <- object
-	nChain = length(x)-1
-    p <- dim(x$chain1$B.p)[1]
-    q <- dim(x$chain1$B.p)[2]
+    p <- dim(x$B.p)[1]
+    q <- dim(x$B.p)[2]
     
-    nS <- dim(x$chain1$B.p)[3]
+    nS <- dim(x$B.p)[3]
     value <- list(model=class(x)[2])
-    cov.names <- x$chain1$covNames
-    out.names <- colnames(matrix(x$chain1$B.p[1,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
+    cov.names <- x$covNames
+    out.names <- colnames(matrix(x$B.p[1,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
 
     # estimates
     ##
     
     #B and Gamma
-    B <- array(NA, c(p,q, nS*nChain))
-    Gamma <- array(NA, c(p,q, nS*nChain))
-    B[,,1:nS] <- x$chain1$B.p
-    Gamma[,,1:nS] <- x$chain1$gamma.p
-    
-    if(nChain > 1){
-        for(i in 2:nChain){
-            nam <- paste("chain", i, sep="")
-            B[,,(nS*(i-1)+1):(nS*i)] <- x[[nam]]$B.p
-            Gamma[,,(nS*(i-1)+1):(nS*i)] <- x[[nam]]$gamma.p
-        }
-    }
+    B <- array(NA, c(p,q, nS))
+    Gamma <- array(NA, c(p,q, nS))
+    B[,,1:nS] <- x$B.p
+    Gamma[,,1:nS] <- x$gamma.p
     
     Gamma.Mean	<- apply(Gamma, c(1,2), mean)
     B.Mean <- matrix(NA, p, q)
@@ -349,13 +309,7 @@ summary.mvnBvs <- function(object, digits=3, ...)
     }
     
     #beta0
-    beta0 <- x$chain1$beta0.p
-    if(nChain > 1){
-        for(i in 2:nChain){
-            nam <- paste("chain", i, sep="")
-            beta0 <- rbind(beta0, x[[nam]]$beta0.p)
-        }
-    }
+    beta0 <- x$beta0.p
 
     beta0.Med <- apply(beta0, 2, median)
     beta0.Mean <- apply(beta0, 2, mean)
@@ -374,15 +328,8 @@ summary.mvnBvs <- function(object, digits=3, ...)
     {
         
         #Sigma
-        Sigma <- array(NA, c(q,q, nS*nChain))
-        Sigma[,,1:nS] <- x$chain1$Sigma.p
-        
-        if(nChain > 1){
-            for(i in 2:nChain){
-                nam <- paste("chain", i, sep="")
-                Sigma[,,(nS*(i-1)+1):(nS*i)] <- x[[nam]]$Sigma.p
-            }
-        }
+        Sigma <- array(NA, c(q,q, nS))
+        Sigma[,,1:nS] <- x$Sigma.p
         
         Sigma.Med <- apply(Sigma, c(1,2), median)
         Sigma.Sd <- apply(Sigma, c(1,2), sd)
@@ -405,13 +352,7 @@ summary.mvnBvs <- function(object, digits=3, ...)
     {
         
         #lambda
-        lambda <- x$chain1$lambda.p
-        if(nChain > 1){
-            for(i in 2:nChain){
-                nam <- paste("chain", i, sep="")
-                lambda <- rbind(lambda, x[[nam]]$lambda.p)
-            }
-        }
+        lambda <- x$lambda.p
         
         lambda.Med <- apply(lambda, 2, median)
         lambda.Mean <- apply(lambda, 2, mean)
@@ -424,14 +365,7 @@ summary.mvnBvs <- function(object, digits=3, ...)
         
         value$lambda <- output.lambda
         
-        sigSq.p <- x$chain1$sigSq.p
-        
-        if(nChain > 1){
-            for(i in 2:nChain){
-                nam <- paste("chain", i, sep="")
-                sigSq.p <- rbind(sigSq.p, x[[nam]]$sigSq.p)
-            }
-        }
+        sigSq.p <- x$sigSq.p
         
         sigSq.pMed <- apply(sigSq.p, 2, median)
         sigSq.pUb <- apply(sigSq.p, 2, quantile, prob = 0.975)
@@ -453,33 +387,24 @@ summary.mvnBvs <- function(object, digits=3, ...)
 summary.mzipBvs <- function(object, digits=3, ...)
 {
     x <- object
-    nChain = length(x)-1
-    p_x <- dim(x$chain1$B.p)[1]
-    p_z <- dim(x$chain1$A.p)[1]
-    q <- dim(x$chain1$B.p)[2]
+    p_x <- dim(x$B.p)[1]
+    p_z <- dim(x$A.p)[1]
+    q <- dim(x$B.p)[2]
     
-    nS <- dim(x$chain1$B.p)[3]
+    nS <- dim(x$B.p)[3]
     value <- list(model=class(x)[2])
-    cov.names.z <- x$chain1$covNames.z
-    cov.names.x <- x$chain1$covNames.x
-    out.names <- colnames(matrix(x$chain1$B.p[1,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
+    cov.names.z <- x$covNames.z
+    cov.names.x <- x$covNames.x
+    out.names <- colnames(matrix(x$B.p[1,,1], 1, q), do.NULL=FALSE, prefix = "Outcome.")
 
     # estimates
     ##
     
     #B and Gamma
-    B <- array(NA, c(p_x, q, nS*nChain))
-    Gamma <- array(NA, c(p_x,q, nS*nChain))
-    B[,,1:nS] <- x$chain1$B.p
-    Gamma[,,1:nS] <- x$chain1$gamma_beta.p
-    
-    if(nChain > 1){
-        for(i in 2:nChain){
-            nam <- paste("chain", i, sep="")
-            B[,,(nS*(i-1)+1):(nS*i)] <- x[[nam]]$B.p
-            Gamma[,,(nS*(i-1)+1):(nS*i)] <- x[[nam]]$gamma_beta.p
-        }
-    }
+    B <- array(NA, c(p_x, q, nS))
+    Gamma <- array(NA, c(p_x,q, nS))
+    B[,,1:nS] <- x$B.p
+    Gamma[,,1:nS] <- x$gamma_beta.p
     
     Gamma.Mean    <- apply(Gamma, c(1,2), mean)
     B.Mean <- matrix(NA, p_x, q)
@@ -520,13 +445,7 @@ summary.mzipBvs <- function(object, digits=3, ...)
     }
     
     #beta0
-    beta0 <- x$chain1$beta0.p
-    if(nChain > 1){
-        for(i in 2:nChain){
-            nam <- paste("chain", i, sep="")
-            beta0 <- rbind(beta0, x[[nam]]$beta0.p)
-        }
-    }
+    beta0 <- x$beta0.p
     
     beta0.Med <- apply(beta0, 2, median)
     beta0.Mean <- apply(beta0, 2, mean)
@@ -542,18 +461,10 @@ summary.mzipBvs <- function(object, digits=3, ...)
     
     
     #A and delta
-    B <- array(NA, c(p_z, q, nS*nChain))
-    Gamma <- array(NA, c(p_z,q, nS*nChain))
-    B[,,1:nS] <- x$chain1$A.p
-    Gamma[,,1:nS] <- x$chain1$gamma_alpha.p
-    
-    if(nChain > 1){
-        for(i in 2:nChain){
-            nam <- paste("chain", i, sep="")
-            B[,,(nS*(i-1)+1):(nS*i)] <- x[[nam]]$A.p
-            Gamma[,,(nS*(i-1)+1):(nS*i)] <- x[[nam]]$gamma_alpha.p
-        }
-    }
+    B <- array(NA, c(p_z, q, nS))
+    Gamma <- array(NA, c(p_z,q, nS))
+    B[,,1:nS] <- x$A.p
+    Gamma[,,1:nS] <- x$gamma_alpha.p
     
     Gamma.Mean    <- apply(Gamma, c(1,2), mean)
     B.Mean <- matrix(NA, p_z, q)
@@ -594,13 +505,7 @@ summary.mzipBvs <- function(object, digits=3, ...)
     }
     
     #alpha0
-    beta0 <- x$chain1$alpha0.p
-    if(nChain > 1){
-        for(i in 2:nChain){
-            nam <- paste("chain", i, sep="")
-            beta0 <- rbind(beta0, x[[nam]]$alpha0.p)
-        }
-    }
+    beta0 <- x$alpha0.p
     
     beta0.Med <- apply(beta0, 2, median)
     beta0.Mean <- apply(beta0, 2, mean)
@@ -617,15 +522,8 @@ summary.mzipBvs <- function(object, digits=3, ...)
     if(class(x)[2] == "generalized")
     {
         #Sigma_V
-        Sigma <- array(NA, c(q,q, nS*nChain))
-        Sigma[,,1:nS] <- x$chain1$Sigma_V.p
-        
-        if(nChain > 1){
-            for(i in 2:nChain){
-                nam <- paste("chain", i, sep="")
-                Sigma[,,(nS*(i-1)+1):(nS*i)] <- x[[nam]]$Sigma_V.p
-            }
-        }
+        Sigma <- array(NA, c(q,q, nS))
+        Sigma[,,1:nS] <- x$Sigma_V.p
         
         Sigma.Med <- apply(Sigma, c(1,2), median)
         Sigma.Sd <- apply(Sigma, c(1,2), sd)
@@ -643,15 +541,8 @@ summary.mzipBvs <- function(object, digits=3, ...)
         value$SigmaV.UL <- Sigma.Ub
         
         #R
-        Sigma <- array(NA, c(q,q, nS*nChain))
-        Sigma[,,1:nS] <- x$chain1$R.p
-        
-        if(nChain > 1){
-            for(i in 2:nChain){
-                nam <- paste("chain", i, sep="")
-                Sigma[,,(nS*(i-1)+1):(nS*i)] <- x[[nam]]$R.p
-            }
-        }
+        Sigma <- array(NA, c(q,q, nS))
+        Sigma[,,1:nS] <- x$R.p
         
         Sigma.Med <- apply(Sigma, c(1,2), median)
         Sigma.Sd <- apply(Sigma, c(1,2), sd)
@@ -684,7 +575,6 @@ print.summ.mvnBvs <- function(x, digits=3, ...)
 {
     
     cat("\nMultivariate Bayesian Variable Selection \n")
-    nChain = x$setup$nChain
     
     if(x$model == "factor-analytic")
     {
@@ -729,7 +619,6 @@ print.summ.mzipBvs <- function(x, digits=3, ...)
 {
     
     cat("\nMultivariate Bayesian Variable Selection \n")
-    nChain = x$setup$nChain
     
     if(x$model == "generalized")
     {

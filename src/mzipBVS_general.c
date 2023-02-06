@@ -573,6 +573,8 @@ void mzipBVS_general_mcmc(double Ymat[],
         }
     }
     
+    gsl_rng_free(rr);
+    
     PutRNGstate();
     return;
 }

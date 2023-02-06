@@ -159,19 +159,12 @@ Sigma <- diag(1, q) %*% cor(Y) %*% diag(1, q)
 ## - those specific to the factor-analytic model
 lambda		<- rep(0.5, q)
 sigmaSq		<- 1
+
+startValues    <- as.vector(c(beta0, B, gamma, Sigma))
                 
 ####################################
 ## Fitting the unstructured model ##
 ####################################
-
-startValues	<- vector("list", 2)                
- 
-startValues[[1]] <- as.vector(c(beta0, B, gamma, Sigma))
-
-beta0		<- rep(0.2, q)
-Sigma <- diag(0.5, q) %*% cor(Y) %*% diag(0.5, q)
-
-startValues[[2]] <- as.vector(c(beta0, B, gamma, Sigma))
 
 fit.us <- mvnBvs(Y, lin.pred, data, model="unstructured", hyperParams, 
 				startValues, mcmcParams=mcmc.US)
@@ -183,14 +176,8 @@ summ.fit.us
 #######################################
 ## Fitting the factor-analytic model ##
 #######################################
-
-startValues	<- vector("list", 2)                
  
-startValues[[1]] <- as.vector(c(beta0, B, gamma, sigmaSq, lambda))
-
-beta0		<- rep(0.2, q)
-sigmaSq		<- 0.5
-startValues[[2]] <- as.vector(c(beta0, B, gamma, sigmaSq, lambda))
+startValues <- as.vector(c(beta0, B, gamma, sigmaSq, lambda))
 
 fit.fa <- mvnBvs(Y, lin.pred, data, model="factor-analytic", hyperParams, 
 				startValues, mcmcParams=mcmc.FA)
