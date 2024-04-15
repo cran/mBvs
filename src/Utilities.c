@@ -21,6 +21,7 @@
 #include "mzipBVS_general.h"
 #include "mzip_restricted1.h"
 #include "mzip_restricted2.h"
+#include "MMZIP.h"
 
 #define Pi 3.141592653589793238462643383280
 
@@ -52,7 +53,8 @@ double sumCorus_j(gsl_matrix *Sigma,
 
 void c_riwishart(double v,
                  gsl_matrix *X_ori,
-                 gsl_matrix *sample)
+                 gsl_matrix *sample,
+                 gsl_matrix *sampleInv)
 {
     int i, j;
     double df;
@@ -97,6 +99,7 @@ void c_riwishart(double v,
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1, ZZ, cholX, 0, XX);
     gsl_blas_dgemm(CblasTrans, CblasNoTrans, 1, XX, XX, 0, KK);
     matrixInv(KK, sample);
+    gsl_matrix_memcpy(sampleInv, KK);
     
     gsl_matrix_free(X);
     gsl_matrix_free(cholX);
@@ -107,7 +110,8 @@ void c_riwishart(double v,
 
 void c_riwishart2(double v,
                   gsl_matrix *X_ori,
-                  gsl_matrix *sample)
+                  gsl_matrix *sample,
+                  gsl_matrix *sampleInv)
 {
     int i, j;
     double df;
@@ -157,6 +161,7 @@ void c_riwishart2(double v,
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1, ZZ, cholX, 0, XX);
     gsl_blas_dgemm(CblasTrans, CblasNoTrans, 1, XX, XX, 0, KK);
     matrixInv(KK, sample);
+    gsl_matrix_memcpy(sampleInv, KK);
     
     gsl_matrix_free(X);
     gsl_matrix_free(cholX);
@@ -166,7 +171,61 @@ void c_riwishart2(double v,
     gsl_vector_free(diag);
 }
 
-
+void c_riwishart3(double v,
+                  gsl_matrix *X_ori,
+                  gsl_matrix *sample,
+                  gsl_matrix *sampleInv,
+                  gsl_matrix *cholX)
+{
+    int i, j;
+    double df;
+    double normVal;
+    
+    int p = X_ori->size1;
+    
+    gsl_matrix *X = gsl_matrix_calloc(p, p);
+    matrixInv(X_ori, X);
+    
+    gsl_matrix *ZZ = gsl_matrix_calloc(p, p);
+    gsl_matrix *XX = gsl_matrix_calloc(p, p);
+    gsl_matrix *KK = gsl_matrix_calloc(p, p);
+    
+    gsl_matrix_memcpy(cholX, X);
+    gsl_linalg_cholesky_decomp(cholX);
+    
+    for(i = 0; i < p; i ++)
+    {
+        for(j = 0; j < i; j ++)
+        {
+            gsl_matrix_set(cholX, i, j, 0);
+        }
+    }
+    
+    for(i = 0; i < p; i++)
+    {
+        df = v - (double) i;
+        gsl_matrix_set(ZZ, i, i, sqrt(rchisq(df)));
+    }
+    
+    for(i = 0; i < p; i++)
+    {
+        for(j = 0; j < i; j ++)
+        {
+            normVal = rnorm(0, 1);
+            gsl_matrix_set(ZZ, i, j, normVal);
+        }
+    }
+    
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1, ZZ, cholX, 0, XX);
+    gsl_blas_dgemm(CblasTrans, CblasNoTrans, 1, XX, XX, 0, KK);
+    matrixInv(KK, sample);
+    gsl_matrix_memcpy(sampleInv, KK);
+    
+    gsl_matrix_free(X);
+    gsl_matrix_free(XX);
+    gsl_matrix_free(ZZ);
+    gsl_matrix_free(KK);
+}
 
 
 /********* For mvnBVS-FA model *************/
@@ -461,6 +520,32 @@ void c_rmvnorm(gsl_matrix *sample,
     }
     
     gsl_matrix_free(temp);
+    return;
+}
+
+void c_rmvnorm2(gsl_matrix *sample,
+                gsl_vector *mean,
+                gsl_matrix *chol)
+{
+    int n = sample->size2;
+    int numSpl = sample->size1;
+    int i, j;
+    double spl;
+    
+    for(i = 0; i < numSpl; i ++){
+        for(j = 0; j < n; j ++){
+            spl = rnorm(0, 1);
+            gsl_matrix_set(sample, i, j, spl);
+        }
+    }
+    
+    gsl_blas_dtrmm(CblasRight, CblasUpper, CblasNoTrans, CblasNonUnit, 1, chol, sample);
+    
+    for(i = 0; i < numSpl; i++){
+        gsl_vector_view sampleRow = gsl_matrix_row(sample, i);
+        gsl_vector_add(&sampleRow.vector, mean);
+    }
+    
     return;
 }
 
@@ -880,24 +965,429 @@ void psd_chk(gsl_matrix * A, gsl_vector * check)
 
 
 
+/********* For mmzip-BVS model *************/
+
+
+void Get_subVector(gsl_vector *vec, int i, gsl_vector *subvec)
+{
+    int q = vec->size;
+    int j;
+    
+    gsl_vector_set_zero(subvec);
+    
+    for(j = 0; j < q-1; j++)
+    {
+        if(j < i)
+        {
+            gsl_vector_set(subvec, j, gsl_vector_get(vec, j));
+        }else
+        {
+            gsl_vector_set(subvec, j, gsl_vector_get(vec, j+1));
+        }
+    }
+    
+    return;
+}
+
+
+
+/*
+ Evaluate the inverse of the matrix M
+ */
+void c_solve_covFA1(gsl_vector *lambda,
+                 gsl_matrix *Minv)
+{
+    int d = Minv->size1;
+    int i;
+    double den;
+    gsl_matrix *temp = gsl_matrix_calloc(d, d);
+    
+    gsl_blas_ddot(lambda, lambda, &den);
+    den += 1;
+    
+    gsl_blas_dger(-1, lambda, lambda, temp);
+    gsl_matrix_scale(temp, pow(den, -1));
+    
+    for(i = 0; i < d; i++)
+    {
+        gsl_matrix_set(temp, i, i, gsl_matrix_get(temp, i, i) + 1);
+    }
+    
+    gsl_matrix_memcpy(Minv, temp);
+    gsl_matrix_free(temp);
+    
+    return;
+}
+
+
+
+void c_solve_corFA1(gsl_vector *lambda,
+                 gsl_matrix *Rinv)
+{
+    int d = Rinv->size1;
+    int i, j;
+    gsl_matrix *Minv = gsl_matrix_calloc(d, d);
+    gsl_matrix *temp = gsl_matrix_calloc(d, d);
+    gsl_vector *s = gsl_vector_calloc(d);
+
+    c_solve_covFA1(lambda, Minv);
+    
+    for(i = 0; i < d; i++)
+    {
+        gsl_vector_set(s, i, pow(1 + pow(gsl_vector_get(lambda, i), 2), 0.5));
+    }
+    
+    for(i = 0; i < d; i++)
+    {
+        for(j = 0; j < d; j++)
+        {
+            gsl_matrix_set(temp, j, i, gsl_vector_get(s, j) * gsl_matrix_get(Minv, j, i));
+        }
+    }
+    
+    for(i = 0; i < d; i++)
+    {
+        for(j = 0; j < d; j++)
+        {
+            gsl_matrix_set(Rinv, j, i, gsl_matrix_get(temp, j, i) * gsl_vector_get(s, i));
+        }
+    }
+    
+    gsl_matrix_free(Minv);
+    gsl_matrix_free(temp);
+    gsl_vector_free(s);
+    
+    return;
+}
 
 
 
 
 
+void cov_FA1(gsl_vector *lambda,
+              gsl_matrix *M)
+{
+    int d = M->size1;
+    int i;
+    gsl_matrix *temp = gsl_matrix_calloc(d, d);
+
+    gsl_blas_dger(1, lambda, lambda, temp);
+    
+    for(i = 0; i < d; i++)
+    {
+        gsl_matrix_set(temp, i, i, gsl_matrix_get(temp, i, i) + 1);
+    }
+    
+    gsl_matrix_memcpy(M, temp);
+    gsl_matrix_free(temp);
+    
+    return;
+}
+
+
+
+void c_cov2cor(gsl_matrix *Sigma,
+               gsl_matrix *R)
+{
+    int d = Sigma->size1;
+    int i, j;
+    gsl_matrix *temp = gsl_matrix_calloc(d, d);
+    gsl_vector *Is = gsl_vector_calloc(d);
+    
+    for(i = 0; i < d; i++)
+    {
+        gsl_vector_set(Is, i, pow(gsl_matrix_get(Sigma, i, i), -0.5));
+    }
+    
+    for(i = 0; i < d; i++)
+    {
+        for(j = 0; j < d; j++)
+        {
+            gsl_matrix_set(temp, j, i, gsl_vector_get(Is, j) * gsl_matrix_get(Sigma, j, i));
+        }
+    }
+    
+    for(i = 0; i < d; i++)
+    {
+        for(j = 0; j < d; j++)
+        {
+            gsl_matrix_set(R, j, i, gsl_matrix_get(temp, j, i) * gsl_vector_get(Is, i));
+        }
+    }
+    
+    
+    for(i = 0; i < d; i++)
+    {
+        gsl_matrix_set(R, i, i, 1);
+    }
+    
+    gsl_matrix_free(temp);
+    gsl_vector_free(Is);
+    
+    return;
+}
 
 
 
 
+/*
+ Density calculation for a multivariate normal distribution
+ */
+void c_dmvnorm2_FA(gsl_vector *x,
+                   gsl_vector *mu,
+                   double     sigma,
+                   gsl_matrix *AInv,
+                   gsl_vector *m,
+                   double     *value)
+{
+    int K = x->size;
+    double sigmaSqInv = pow(sigma, -2);
+    int j;
+    double detR;
+    
+    gsl_vector *diff       = gsl_vector_alloc(K);
+    gsl_matrix *SigmaInv   = gsl_matrix_alloc(K, K);
+    
+    gsl_vector_memcpy(diff, x);
+    gsl_vector_sub(diff, mu);
+    gsl_matrix_memcpy(SigmaInv, AInv);
+    gsl_matrix_scale(SigmaInv, sigmaSqInv);
+    
+    gsl_blas_ddot(m, m, &detR);
+    detR += 1;
+    for(j = 0; j < K; j++)
+    {
+        detR /= pow(gsl_vector_get(m, j), 2) + 1;
+    }
+    
+    c_quadform_vMv(diff, SigmaInv, value);
+    
+    *value = (-log(detR) - log(pow(2*Pi, K)) - *value) / 2;
+    
+    gsl_vector_free(diff);
+    gsl_matrix_free(SigmaInv);
+    return;
+}
+
+
+
+/*
+ Density calculation for a multivariate normal distribution
+ */
+void c_dmvnorm2(gsl_vector *x,
+                gsl_vector *mu,
+                double     sigma,
+                gsl_matrix *AInv,
+                double     *value)
+{
+    int signum, K = x->size;
+    double sigmaSqInv = pow(sigma, -2);
+    
+    gsl_vector *diff       = gsl_vector_alloc(K);
+    gsl_matrix *SigmaInv   = gsl_matrix_alloc(K, K);
+    gsl_matrix *SigmaInvLU = gsl_matrix_alloc(K, K);
+    gsl_permutation *p     = gsl_permutation_alloc(K);
+    
+    gsl_vector_memcpy(diff, x);
+    gsl_vector_sub(diff, mu);
+    
+    gsl_matrix_memcpy(SigmaInv, AInv);
+    gsl_matrix_scale(SigmaInv, sigmaSqInv);
+    gsl_matrix_memcpy(SigmaInvLU, SigmaInv);
+    gsl_linalg_LU_decomp(SigmaInvLU, p, &signum);
+    
+    c_quadform_vMv(diff, SigmaInv, value);
+    
+    *value = (log(gsl_linalg_LU_det(SigmaInvLU, signum)) - log(pow(2*Pi, K)) - *value) / 2;
+    
+    gsl_vector_free(diff);
+    gsl_matrix_free(SigmaInv);
+    gsl_matrix_free(SigmaInvLU);
+    gsl_permutation_free(p);
+    return;
+}
 
 
 
 
+void c_ldmvn_noDet(gsl_vector *x,
+                gsl_vector *mu,
+                double     sigma,
+                gsl_matrix *AInv,
+                double     *value)
+{
+    int K = x->size;
+    double sigmaSqInv = pow(sigma, -2);
+    
+    gsl_vector *diff       = gsl_vector_alloc(K);
+    gsl_matrix *SigmaInv   = gsl_matrix_alloc(K, K);
+    
+    gsl_vector_memcpy(diff, x);
+    gsl_vector_sub(diff, mu);
+    
+    gsl_matrix_memcpy(SigmaInv, AInv);
+    gsl_matrix_scale(SigmaInv, sigmaSqInv);
+    c_quadform_vMv(diff, SigmaInv, value);
+
+    *value *= -0.5;
+    
+    gsl_vector_free(diff);
+    gsl_matrix_free(SigmaInv);
+    return;
+    
+}
 
 
 
+void new_mean_vec(gsl_vector *mean,
+                  int n_old,
+                  gsl_vector *newObs)
+{
+    gsl_vector_scale(mean, (double) n_old);
+    gsl_vector_add(mean, newObs);
+    gsl_vector_scale(mean, pow((double) n_old+1, -1));
+    
+    return;
+}
+
+void new_var_vec(gsl_vector *var,
+                 gsl_vector *oldmean,
+                  int n_old,
+                  gsl_vector *newObs)
+{
+    int K = var->size;
+    gsl_vector *temp       = gsl_vector_alloc(K);
+    
+    if(n_old == 1)
+    {
+        gsl_vector_set_zero(var);
+    }else
+    {
+        gsl_vector_scale(var, (double) (n_old-1)/(n_old));
+    }
+    
+    gsl_vector_memcpy(temp, oldmean);
+    gsl_vector_sub(temp, newObs);
+    gsl_vector_mul(temp, temp);    
+    gsl_vector_scale(temp, (double) 1/(n_old+1));
+    gsl_vector_add(var, temp);
+    
+    gsl_vector_free(temp);
+    
+    return;
+}
 
 
+void new_mean_mat(gsl_matrix *mean,
+                  int n_old,
+                  gsl_matrix *newObs)
+{
+    gsl_matrix_scale(mean, (double) n_old);
+    gsl_matrix_add(mean, newObs);
+    gsl_matrix_scale(mean, pow((double) n_old+1, -1));
+    
+    return;
+}
+
+void new_mean_mat2(gsl_matrix *mean,
+                  gsl_matrix *s_Param,
+                  gsl_matrix *newObs)
+{
+    int k, j;
+    int p = mean->size1;
+    int q = mean->size2;
+    
+    gsl_matrix_mul_elements(mean, s_Param);
+    gsl_matrix_add(mean, newObs);
+    
+    for(k = 0; k < p; k++)
+    {
+        for(j = 0; j < q; j++)
+        {
+            gsl_matrix_set(mean, k, j, gsl_matrix_get(mean, k, j) * pow(gsl_matrix_get(s_Param, k, j)+1, -1));
+        }
+    }
+    
+    return;
+}
+
+void new_var_mat(gsl_matrix *var,
+                 gsl_matrix *oldmean,
+                  int n_old,
+                  gsl_matrix *newObs)
+{
+    int n = var->size1;
+    int p = var->size2;
+    
+    gsl_matrix *temp       = gsl_matrix_alloc(n, p);
+
+    if(n_old == 1)
+    {
+        gsl_matrix_set_zero(var);
+    }else
+    {
+        gsl_matrix_scale(var, (double) (n_old-1)/(n_old));
+    }
+        
+    gsl_matrix_memcpy(temp, oldmean);
+    gsl_matrix_sub(temp, newObs);
+    gsl_matrix_mul_elements(temp, temp);
+    gsl_matrix_scale(temp, (double) 1/(n_old+1));
+    gsl_matrix_add(var, temp);
+        
+    gsl_matrix_free(temp);
+    
+
+    
+    return;
+}
+
+
+
+void new_var_mat2(gsl_matrix *var,
+                 gsl_matrix *oldmean,
+                  gsl_matrix *s_Param,
+                  gsl_matrix *newObs)
+{
+    int k, j;
+    int p = var->size1;
+    int q = var->size2;
+    
+    gsl_matrix *temp       = gsl_matrix_alloc(p, q);
+    
+    
+    for(k = 0; k < p; k++)
+    {
+        for(j = 0; j < q; j++)
+        {
+            if(gsl_matrix_get(s_Param, k, j) == 1)
+            {
+                gsl_matrix_set(var, k, j, 0);
+            }else
+            {
+                gsl_matrix_set(var, k, j, gsl_matrix_get(var, k, j)* (gsl_matrix_get(s_Param, k, j)-1)/gsl_matrix_get(s_Param, k, j) );
+            }
+        }
+    }
+        
+    gsl_matrix_memcpy(temp, oldmean);
+    gsl_matrix_sub(temp, newObs);
+    gsl_matrix_mul_elements(temp, temp);
+    
+    for(k = 0; k < p; k++)
+    {
+        for(j = 0; j < q; j++)
+        {
+            gsl_matrix_set(temp, k, j, gsl_matrix_get(temp, k, j)/(gsl_matrix_get(s_Param, k, j)+1) );
+        }
+    }
+
+    gsl_matrix_add(var, temp);
+        
+    gsl_matrix_free(temp);
+    
+    return;
+}
 
 
 

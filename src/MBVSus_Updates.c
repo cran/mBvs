@@ -535,9 +535,7 @@ void updateCPus(int *q_adj,
     gsl_matrix_memcpy(Sigma_scaled, Sigma);
     gsl_matrix_scale(Sigma_scaled, rho_prop);
     
-    c_riwishart(rho_prop+3, Sigma_scaled, Sigma_prop);
-    
-    c_solve(Sigma_prop, invSigma_prop);
+    c_riwishart(rho_prop+3, Sigma_scaled, Sigma_prop, invSigma_prop);
     
     for(i = 0; i < n; i++)
     {

@@ -34,11 +34,13 @@ extern void psd_chk(gsl_matrix *A, gsl_vector *check);
 
 extern void c_riwishart(double v,
                         gsl_matrix *X_ori,
-                        gsl_matrix *sample);
+                        gsl_matrix *sample,
+                        gsl_matrix *sampleInv);
 
 extern void c_riwishart2(double v,
                          gsl_matrix *X_ori,
-                         gsl_matrix *sample);
+                         gsl_matrix *sample,
+                         gsl_matrix *sampleInv);
 
 extern double c_min(double value1,
                     double value2);

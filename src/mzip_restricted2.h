@@ -29,7 +29,8 @@ extern double get_det(gsl_matrix * A);
 
 extern void c_riwishart(double v,
                         gsl_matrix *X_ori,
-                        gsl_matrix *sample);
+                        gsl_matrix *sample,
+                        gsl_matrix *sampleInv);
 
 extern double c_min(double value1,
                     double value2);
@@ -41,150 +42,150 @@ extern void c_colSums(gsl_matrix *X, gsl_vector *v);
 
 
 extern void mzip_restricted2_updateRP_beta(int *p_adj,
-                          gsl_matrix *Y,
-                          gsl_matrix *X1,
-                          gsl_vector *xi,
-                          gsl_matrix *W,
-                          gsl_vector *beta0,
-                          gsl_matrix *B,
-                          gsl_matrix *V,
-                          gsl_matrix *gamma_beta,
-                          gsl_matrix *updateNonzB,
-                          gsl_vector *sigSq_beta,
-                          gsl_vector *v_beta,
-                          gsl_vector *omega_beta,
-                          double beta_prop_var,
-                          gsl_matrix *accept_B);
+                                           gsl_matrix *Y,
+                                           gsl_matrix *X1,
+                                           gsl_vector *xi,
+                                           gsl_matrix *W,
+                                           gsl_vector *beta0,
+                                           gsl_matrix *B,
+                                           gsl_matrix *V,
+                                           gsl_matrix *gamma_beta,
+                                           gsl_matrix *updateNonzB,
+                                           gsl_vector *sigSq_beta,
+                                           gsl_vector *v_beta,
+                                           gsl_vector *omega_beta,
+                                           double beta_prop_var,
+                                           gsl_matrix *accept_B);
 
 extern void mzip_restricted2_updateRP_alpha(int *p_adj,
-                           gsl_matrix *Y,
-                           gsl_matrix *X0,
-                           gsl_vector *alpha0,
-                           gsl_matrix *A,
-                           gsl_matrix *W,
-                           gsl_matrix *gamma_alpha,
-                           gsl_matrix *updateNonzA,
-                           gsl_matrix *invR,
-                           gsl_vector *sigSq_alpha,
-                           gsl_vector *phi,
-                           double nu_t,
-                           double sigSq_t,
-                           gsl_vector *v_alpha,
-                           gsl_vector *omega_alpha,
-                           double alpha_prop_var,
-                           gsl_matrix *accept_A);
+                                            gsl_matrix *Y,
+                                            gsl_matrix *X0,
+                                            gsl_vector *alpha0,
+                                            gsl_matrix *A,
+                                            gsl_matrix *W,
+                                            gsl_matrix *gamma_alpha,
+                                            gsl_matrix *updateNonzA,
+                                            gsl_matrix *invR,
+                                            gsl_vector *sigSq_alpha,
+                                            gsl_vector *phi,
+                                            double nu_t,
+                                            double sigSq_t,
+                                            gsl_vector *v_alpha,
+                                            gsl_vector *omega_alpha,
+                                            double alpha_prop_var,
+                                            gsl_matrix *accept_A);
 
 
 extern void mzip_restricted2_update_Sigma(gsl_matrix *X0,
-                         gsl_vector *alpha0,
-                         gsl_matrix *A,
-                         gsl_matrix *W,
-                         gsl_matrix *V,
-                         gsl_matrix *R,
-                         gsl_matrix *invR,
-                         gsl_vector *S,
-                         gsl_matrix *diaginvS,
-                         gsl_matrix *invSigma,
-                         gsl_vector *phi,
-                         gsl_matrix *Q,
-                         double sigSq_t,
-                         double nu_t,
-                         gsl_matrix *Psi0,
-                         double rho0,
-                         double rho_s,
-                         int *accept_R);
+                                          gsl_vector *alpha0,
+                                          gsl_matrix *A,
+                                          gsl_matrix *W,
+                                          gsl_matrix *V,
+                                          gsl_matrix *R,
+                                          gsl_matrix *invR,
+                                          gsl_vector *S,
+                                          gsl_matrix *diaginvS,
+                                          gsl_matrix *invSigma,
+                                          gsl_vector *phi,
+                                          gsl_matrix *Q,
+                                          double sigSq_t,
+                                          double nu_t,
+                                          gsl_matrix *Psi0,
+                                          double rho0,
+                                          double rho_s,
+                                          int *accept_R);
 
 
 
 extern void mzip_restricted2_update_alpha0(gsl_matrix *X0,
-                          gsl_vector *alpha0,
-                          gsl_matrix *A,
-                          gsl_matrix *W,
-                          gsl_matrix *invR,
-                          gsl_vector *phi,
-                          double nu_t,
-                          double sigSq_t,
-                          double mu_alpha0,
-                          double sigSq_alpha0);
+                                           gsl_vector *alpha0,
+                                           gsl_matrix *A,
+                                           gsl_matrix *W,
+                                           gsl_matrix *invR,
+                                           gsl_vector *phi,
+                                           double nu_t,
+                                           double sigSq_t,
+                                           double mu_alpha0,
+                                           double sigSq_alpha0);
 
 
 extern void mzip_restricted2_update_sigSq_alpha0(gsl_vector *alpha0,
-                                double *sigSq_alpha0,
-                                double a_alpha0,
-                                double b_alpha0);
+                                                 double *sigSq_alpha0,
+                                                 double a_alpha0,
+                                                 double b_alpha0);
 
 extern void mzip_restricted2_update_W(gsl_matrix *Y,
-                     gsl_matrix *X0,
-                     gsl_matrix *X1,
-                     gsl_vector *xi,
-                     gsl_vector *alpha0,
-                     gsl_matrix *A,
-                     gsl_matrix *W,
-                     gsl_vector *beta0,
-                     gsl_matrix *B,
-                     gsl_matrix *V,
-                     gsl_matrix *invR,
-                     gsl_vector *phi,
-                     double nu_t,
-                     double sigSq_t);
+                                      gsl_matrix *X0,
+                                      gsl_matrix *X1,
+                                      gsl_vector *xi,
+                                      gsl_vector *alpha0,
+                                      gsl_matrix *A,
+                                      gsl_matrix *W,
+                                      gsl_vector *beta0,
+                                      gsl_matrix *B,
+                                      gsl_matrix *V,
+                                      gsl_matrix *invR,
+                                      gsl_vector *phi,
+                                      double nu_t,
+                                      double sigSq_t);
 
 
 
 
 
 extern void mzip_restricted2_update_sigSq_beta0(gsl_vector *beta0,
-                               double *sigSq_beta0,
-                               double a_beta0,
-                               double b_beta0);
+                                                double *sigSq_beta0,
+                                                double a_beta0,
+                                                double b_beta0);
 
 extern void mzip_restricted2_update_sigSq_alpha(gsl_matrix *A,
-                               gsl_matrix *gamma_alpha,
-                               gsl_vector *sigSq_alpha,
-                               gsl_vector *v_alpha,
-                               gsl_vector *a_alpha,
-                               gsl_vector *b_alpha);
+                                                gsl_matrix *gamma_alpha,
+                                                gsl_vector *sigSq_alpha,
+                                                gsl_vector *v_alpha,
+                                                gsl_vector *a_alpha,
+                                                gsl_vector *b_alpha);
 
 extern void mzip_restricted2_update_sigSq_beta(gsl_matrix *B,
-                              gsl_matrix *gamma_beta,
-                              gsl_vector *sigSq_beta,
-                              gsl_vector *v_beta,
-                              gsl_vector *a_beta,
-                              gsl_vector *b_beta);
+                                               gsl_matrix *gamma_beta,
+                                               gsl_vector *sigSq_beta,
+                                               gsl_vector *v_beta,
+                                               gsl_vector *a_beta,
+                                               gsl_vector *b_beta);
 
 extern void mzip_restricted2_update_V(gsl_matrix *Y,
-                     gsl_matrix *X1,
-                     gsl_vector *xi,
-                     gsl_matrix *W,
-                     gsl_vector *beta0,
-                     gsl_matrix *B,
-                     gsl_matrix *V,
-                     gsl_matrix *invSigma,
-                     gsl_matrix *accept_V,
-                     double V_prop_var);
+                                      gsl_matrix *X1,
+                                      gsl_vector *xi,
+                                      gsl_matrix *W,
+                                      gsl_vector *beta0,
+                                      gsl_matrix *B,
+                                      gsl_matrix *V,
+                                      gsl_matrix *invSigma,
+                                      gsl_matrix *accept_V,
+                                      double V_prop_var);
 
 void mzip_restricted2_update_phi(gsl_matrix *X0,
-                gsl_vector *alpha0,
-                gsl_matrix *A,
-                gsl_matrix *W,
-                gsl_matrix *invR,
-                gsl_vector *phi,
-                double nu_t,
-                double sigSq_t);
+                                 gsl_vector *alpha0,
+                                 gsl_matrix *A,
+                                 gsl_matrix *W,
+                                 gsl_matrix *invR,
+                                 gsl_vector *phi,
+                                 double nu_t,
+                                 double sigSq_t);
 
 
 
 
 extern void mzip_restricted2_update_beta0(gsl_matrix *Y,
-                         gsl_matrix *X1,
-                         gsl_vector *xi,
-                         gsl_matrix *W,
-                         gsl_vector *beta0,
-                         gsl_matrix *B,
-                         gsl_matrix *V,
-                         double mu_beta0,
-                         double sigSq_beta0,
-                         double beta0_prop_var,
-                         gsl_vector *accept_beta0);
+                                          gsl_matrix *X1,
+                                          gsl_vector *xi,
+                                          gsl_matrix *W,
+                                          gsl_vector *beta0,
+                                          gsl_matrix *B,
+                                          gsl_matrix *V,
+                                          double mu_beta0,
+                                          double sigSq_beta0,
+                                          double beta0_prop_var,
+                                          gsl_vector *accept_beta0);
 
 
 
@@ -195,10 +196,10 @@ extern void c_quadform_vMv(gsl_vector *v,
                            double     *value);
 
 extern void c_dmvnorm(gsl_vector *x,
-                       gsl_vector *mu,
-                       double     sigma,
-                       gsl_matrix *AInv,
-                       double     *value);
+                      gsl_vector *mu,
+                      double     sigma,
+                      gsl_matrix *AInv,
+                      double     *value);
 
 extern void c_rigamma(double *temp,
                       double alpha,

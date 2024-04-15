@@ -672,8 +672,7 @@ void mzipBVS_restricted1_update_Sigma(gsl_matrix *X0,
     gsl_matrix_memcpy(Sigma_scaled, Sigma);
     gsl_matrix_scale(Sigma_scaled, rho_s);
     
-    c_riwishart(rho_s+ (double) q+1, Sigma_scaled, Sigma_prop);
-    c_solve(Sigma_prop, invSigma_prop);
+    c_riwishart(rho_s+ (double) q+1, Sigma_scaled, Sigma_prop, invSigma_prop);
     
     for(j = 0; j < q; j++)
     {
@@ -796,115 +795,118 @@ void mzipBVS_restricted1_update_V(gsl_matrix *Y,
     int q = Y -> size2;
     int p1 = X1 -> size2;
     
-    jj = (int) runif(0, q);
-    
     gsl_vector *beta = gsl_vector_calloc(p1);
     gsl_vector *Xbeta = gsl_vector_calloc(n);
     
-    for(k = 0; k < p1; k++)
+    for(jj=0; jj<q; jj++)
     {
-        gsl_vector_set(beta, k, gsl_matrix_get(B, k, jj));
+        for(k = 0; k < p1; k++)
+        {
+            gsl_vector_set(beta, k, gsl_matrix_get(B, k, jj));
+        }
+        gsl_blas_dgemv(CblasNoTrans, 1, X1, beta, 0, Xbeta);
+        
+        for(i=0; i<n; i++)
+        {
+            loglh = 0;
+            loglh_prop = 0;
+            D1 = 0; D2 = 0;
+            D1_prop = 0; D2_prop = 0;
+            
+            tempB = 0;
+            if(gsl_matrix_get(W, i, jj) >= 0)
+            {
+                tempB = gsl_vector_get(beta0, jj)+gsl_vector_get(Xbeta, i)+gsl_matrix_get(V, i, jj)+log(gsl_vector_get(xi, i));
+                
+                loglh += gsl_matrix_get(V, i, jj)*gsl_matrix_get(Y, i, jj) - exp(tempB);
+                D1 += gsl_matrix_get(Y, i, jj) - exp(tempB);
+                D2 -= exp(tempB);
+            }
+            
+            loglh -= 0.5 * pow(gsl_matrix_get(V, i, jj), 2) * gsl_matrix_get(invSigma, jj, jj);
+            D1 -= gsl_matrix_get(V, i, jj)* gsl_matrix_get(invSigma, jj, jj);
+            D2 -= gsl_matrix_get(invSigma, jj, jj);
+
+            for(k = 0; k < q; k++)
+            {
+                if(k != jj)
+                {
+                    loglh -= gsl_matrix_get(V, i, jj) * gsl_matrix_get(V, i, k) * gsl_matrix_get(invSigma, jj, k);
+                    D1 -= gsl_matrix_get(V, i, k) * gsl_matrix_get(invSigma, jj, k);
+                }
+            }
+            
+            if(D1/D2 > 1 || D1/D2 < -1 )
+            {
+                temp_prop =  rnorm(gsl_matrix_get(V, i, jj), sqrt(V_prop_var));
+                
+                tempB_prop = 0;
+                if(gsl_matrix_get(W, i, jj) >= 0)
+                {
+                    tempB_prop = gsl_vector_get(beta0, jj)+gsl_vector_get(Xbeta, i)+temp_prop+log(gsl_vector_get(xi, i));
+                    
+                    loglh_prop += temp_prop*gsl_matrix_get(Y, i, jj) - exp(tempB_prop);
+                }
+                loglh_prop -= 0.5 * pow(temp_prop, 2) * gsl_matrix_get(invSigma, jj, jj);
+                
+                for(k = 0; k < q; k++)
+                {
+                    if(k != jj)
+                    {
+                        loglh_prop -= temp_prop * gsl_matrix_get(V, i, k) * gsl_matrix_get(invSigma, jj, k);
+                    }
+                }
+                
+                logR = loglh_prop - loglh;
+            }else
+            {
+                temp_prop_me    = gsl_matrix_get(V, i, jj) - D1/D2;
+                temp_prop_var   = -pow(2.4, 2)/D2;
+                
+                temp_prop =  rnorm(temp_prop_me, sqrt(temp_prop_var));
+                
+                tempB_prop = 0;
+                if(gsl_matrix_get(W, i, jj) >= 0)
+                {
+                    tempB_prop = gsl_vector_get(beta0, jj)+gsl_vector_get(Xbeta, i)+temp_prop+log(gsl_vector_get(xi, i));
+                    
+                    loglh_prop += temp_prop*gsl_matrix_get(Y, i, jj) - exp(tempB_prop);
+                    D1_prop += gsl_matrix_get(Y, i, jj) - exp(tempB_prop);
+                    D2_prop -= exp(tempB_prop);
+                }
+                loglh_prop -= 0.5 * pow(temp_prop, 2) * gsl_matrix_get(invSigma, jj, jj);
+                D1_prop -= temp_prop * gsl_matrix_get(invSigma, jj, jj);
+                D2_prop -= gsl_matrix_get(invSigma, jj, jj);
+                
+                for(k = 0; k < q; k++)
+                {
+                    if(k != jj)
+                    {
+                        loglh_prop -= temp_prop * gsl_matrix_get(V, i, k) * gsl_matrix_get(invSigma, jj, k);
+                        D1_prop -= gsl_matrix_get(V, i, k) * gsl_matrix_get(invSigma, jj, k);
+                    }
+                }
+                
+                temp_prop_me_prop   = temp_prop - D1_prop/D2_prop;
+                temp_prop_var_prop   = -pow(2.4, 2)/D2_prop;
+                
+                logProp_IniToProp = dnorm(temp_prop, temp_prop_me, sqrt(temp_prop_var), 1);
+                logProp_PropToIni = dnorm(gsl_matrix_get(V, i, jj), temp_prop_me_prop, sqrt(temp_prop_var_prop), 1);
+                
+                logR = loglh_prop - loglh + logProp_PropToIni - logProp_IniToProp;
+            }
+
+            u = log(runif(0, 1)) < logR;
+
+            if(u == 1)
+            {
+                gsl_matrix_set(V, i, jj, temp_prop);
+                gsl_matrix_set(accept_V, i, jj, gsl_matrix_get(accept_V, i, jj)+1);
+            }
+        }
     }
-    gsl_blas_dgemv(CblasNoTrans, 1, X1, beta, 0, Xbeta);
     
-    for(i=0; i<n; i++)
-    {
-        loglh = 0;
-        loglh_prop = 0;
-        D1 = 0; D2 = 0;
-        D1_prop = 0; D2_prop = 0;
-        
-        tempB = 0;
-        if(gsl_matrix_get(W, i, jj) >= 0)
-        {
-            tempB = gsl_vector_get(beta0, jj)+gsl_vector_get(Xbeta, i)+gsl_matrix_get(V, i, jj)+log(gsl_vector_get(xi, i));
-            
-            loglh += gsl_matrix_get(V, i, jj)*gsl_matrix_get(Y, i, jj) - exp(tempB);
-            D1 += gsl_matrix_get(Y, i, jj) - exp(tempB);
-            D2 -= exp(tempB);
-        }
-        
-        loglh -= 0.5 * pow(gsl_matrix_get(V, i, jj), 2) * gsl_matrix_get(invSigma, jj, jj);
-        D1 -= gsl_matrix_get(V, i, jj)* gsl_matrix_get(invSigma, jj, jj);
-        D2 -= gsl_matrix_get(invSigma, jj, jj);
 
-        for(k = 0; k < q; k++)
-        {
-            if(k != jj)
-            {
-                loglh -= gsl_matrix_get(V, i, jj) * gsl_matrix_get(V, i, k) * gsl_matrix_get(invSigma, jj, k);
-                D1 -= gsl_matrix_get(V, i, k) * gsl_matrix_get(invSigma, jj, k);
-            }
-        }
-        
-        if(D1/D2 > 1 || D1/D2 < -1 )
-        {
-            temp_prop =  rnorm(gsl_matrix_get(V, i, jj), sqrt(V_prop_var));
-            
-            tempB_prop = 0;
-            if(gsl_matrix_get(W, i, jj) >= 0)
-            {
-                tempB_prop = gsl_vector_get(beta0, jj)+gsl_vector_get(Xbeta, i)+temp_prop+log(gsl_vector_get(xi, i));
-                
-                loglh_prop += temp_prop*gsl_matrix_get(Y, i, jj) - exp(tempB_prop);
-            }
-            loglh_prop -= 0.5 * pow(temp_prop, 2) * gsl_matrix_get(invSigma, jj, jj);
-            
-            for(k = 0; k < q; k++)
-            {
-                if(k != jj)
-                {
-                    loglh_prop -= temp_prop * gsl_matrix_get(V, i, k) * gsl_matrix_get(invSigma, jj, k);
-                }
-            }
-            
-            logR = loglh_prop - loglh;
-        }else
-        {
-            temp_prop_me    = gsl_matrix_get(V, i, jj) - D1/D2;
-            temp_prop_var   = -pow(2.4, 2)/D2;
-            
-            temp_prop =  rnorm(temp_prop_me, sqrt(temp_prop_var));
-            
-            tempB_prop = 0;
-            if(gsl_matrix_get(W, i, jj) >= 0)
-            {
-                tempB_prop = gsl_vector_get(beta0, jj)+gsl_vector_get(Xbeta, i)+temp_prop+log(gsl_vector_get(xi, i));
-                
-                loglh_prop += temp_prop*gsl_matrix_get(Y, i, jj) - exp(tempB_prop);
-                D1_prop += gsl_matrix_get(Y, i, jj) - exp(tempB_prop);
-                D2_prop -= exp(tempB_prop);
-            }
-            loglh_prop -= 0.5 * pow(temp_prop, 2) * gsl_matrix_get(invSigma, jj, jj);
-            D1_prop -= temp_prop * gsl_matrix_get(invSigma, jj, jj);
-            D2_prop -= gsl_matrix_get(invSigma, jj, jj);
-            
-            for(k = 0; k < q; k++)
-            {
-                if(k != jj)
-                {
-                    loglh_prop -= temp_prop * gsl_matrix_get(V, i, k) * gsl_matrix_get(invSigma, jj, k);
-                    D1_prop -= gsl_matrix_get(V, i, k) * gsl_matrix_get(invSigma, jj, k);
-                }
-            }
-            
-            temp_prop_me_prop   = temp_prop - D1_prop/D2_prop;
-            temp_prop_var_prop   = -pow(2.4, 2)/D2_prop;
-            
-            logProp_IniToProp = dnorm(temp_prop, temp_prop_me, sqrt(temp_prop_var), 1);
-            logProp_PropToIni = dnorm(gsl_matrix_get(V, i, jj), temp_prop_me_prop, sqrt(temp_prop_var_prop), 1);
-            
-            logR = loglh_prop - loglh + logProp_PropToIni - logProp_IniToProp;
-        }
-
-        u = log(runif(0, 1)) < logR;
-
-        if(u == 1)
-        {
-            gsl_matrix_set(V, i, jj, temp_prop);
-            gsl_matrix_set(accept_V, i, jj, gsl_matrix_get(accept_V, i, jj)+1);
-        }
-    }
     gsl_vector_free(beta);
     gsl_vector_free(Xbeta);
     

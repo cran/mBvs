@@ -53,7 +53,8 @@ void mzipBVS_general_mcmc(double Ymat[],
                  double samples_sigSq_beta0[],
                  double samples_sigSq_alpha[],
                  double samples_sigSq_beta[],
-                 double samples_misc[])
+                 double samples_misc[],
+                          double nVupdate)
 {
     GetRNGstate();
     time_t now;

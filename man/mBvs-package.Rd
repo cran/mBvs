@@ -12,13 +12,14 @@ Bayesian variable selection methods for data with multivariate responses and mul
 	The package includes the following function:
 \tabular{ll}{
 \code{mvnBvs} \tab Bayesian variable selection for data with multivariate continuous responses  \cr
-\code{mzipBvs} \tab Bayesian variable selection for data with multivariate zero-inflated count responses  \cr
+\code{mzipBvs} \tab Bayesian variable selection for conditional multivariate zero-inflated Poisson models \cr
+\code{mmzipBvs} \tab Bayesian variable selection for marginalized multivariate zero-inflated Poisson models \cr
 }
 \tabular{ll}{
 Package: \tab mBvs\cr
 Type: \tab Package\cr
-Version: \tab 1.52\cr
-Date: \tab 2023-2-6\cr
+Version: \tab 1.92\cr
+Date: \tab 2024-4-13\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }

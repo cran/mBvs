@@ -228,7 +228,129 @@ print.mzipBvs <- function(x, digits=3, ...)
 
 
 
-
+print.mmzipBvs <- function(x, digits=3, ...)
+{
+    p_x <- dim(x$B.p)[1]
+    p_z <- dim(x$A.p)[1]
+    q <- dim(x$B.p)[2]
+    q_bin <- dim(x$A.p)[2]
+    
+    nS <- dim(x$B.p)[3]
+    value <- list(model=class(x)[2])
+    cov.names.z <- x$covNames.z
+    cov.names.x <- x$covNames.x
+    out.names <- x$Y.names
+    
+    cat("\nMultivariate Bayesian Variable Selection \n")
+    cat("\n Model: marginalized multivariate zero-inflated Poisson model (MMZIP) \n")
+    
+    ##
+    cat("Number of scans:     ", x$mcmcParams$run$numReps,"\n")
+    ##
+    cat("Thinning:            ", x$mcmcParams$run$thin,"\n")
+    ##
+    cat("Percentage of burnin: ", x$mcmcParams$run$burninPerc*100, "%\n", sep = "")
+    
+    cat("\n#####")
+    
+    #B and Gamma
+    B <- array(NA, c(p_x, q, nS))
+    Gamma <- array(NA, c(p_x,q, nS))
+    B[,,1:nS] <- x$B.p
+    Gamma[,,1:nS] <- x$gamma_beta.p
+    
+    Gamma.Mean    <- apply(Gamma, c(1,2), mean)
+    B.Mean <- matrix(NA, p_x, q)
+    B.Sd <-    matrix(NA, p_x, q)
+    for(k in 1:p_x)
+    {
+        for(j in 1:q)
+        {
+            if(any(B[k,j,]!=0))
+            {
+                B.Mean[k, j] <- mean(B[k,j,B[k,j,]!=0])
+                B.Sd[k, j] <- sd(B[k,j,B[k,j,]!=0])
+            }else
+            {
+                B.Mean[k, j] <- 0
+                B.Sd[k, j] <- 0
+            }
+        }
+    }
+    rownames(Gamma.Mean) <- cov.names.x
+    rownames(B.Mean) <- cov.names.x
+    rownames(B.Sd) <- cov.names.x
+    
+    colnames(Gamma.Mean) <- out.names
+    colnames(B.Mean) <- out.names
+    colnames(B.Sd) <- out.names
+    
+    output.BG <- list()
+    output.BG[[cov.names.x[1]]] <- cbind(B.Mean[1,], B.Sd[1,], Gamma.Mean[1,])
+    colnames(output.BG[[cov.names.x[1]]]) <- c("beta|gamma=1", "SD", "gamma")
+    
+    if(p_x > 1){
+        for(i in 2:p_x){
+            nam <- cov.names.x[i]
+            output.BG[[nam]] <- cbind(B.Mean[i,], B.Sd[i,], Gamma.Mean[i,])
+            colnames(output.BG[[nam]]) <- c("beta|gamma=1", "SD", "gamma")
+        }
+    }
+    
+    ##
+    cat("\nRegression Coefficients and Inclusion Probabilities for the Count Component\n")
+    print(output.BG, digits=digits)
+    
+    cat("\n#####")
+    
+    #A and Gamma_alpha
+    B <- array(NA, c(p_z, q_bin, nS))
+    Gamma <- array(NA, c(p_z,q_bin, nS))
+    B[,,1:nS] <- x$A.p
+    Gamma[,,1:nS] <- x$gamma_alpha.p
+    
+    Gamma.Mean    <- apply(Gamma, c(1,2), mean)
+    B.Mean <- matrix(NA, p_z, q_bin)
+    B.Sd <-    matrix(NA, p_z, q_bin)
+    for(k in 1:p_z)
+    {
+        for(j in 1:q_bin)
+        {
+            if(any(B[k,j,]!=0))
+            {
+                B.Mean[k, j] <- mean(B[k,j,B[k,j,]!=0])
+                B.Sd[k, j] <- sd(B[k,j,B[k,j,]!=0])
+            }else
+            {
+                B.Mean[k, j] <- 0
+                B.Sd[k, j] <- 0
+            }
+        }
+    }
+    rownames(Gamma.Mean) <- cov.names.z
+    rownames(B.Mean) <- cov.names.z
+    rownames(B.Sd) <- cov.names.z
+    
+    colnames(Gamma.Mean) <- out.names[1:q_bin]
+    colnames(B.Mean) <- out.names[1:q_bin]
+    colnames(B.Sd) <- out.names[1:q_bin]
+    
+    output.BG <- list()
+    output.BG[[cov.names.z[1]]] <- cbind(B.Mean[1,], B.Sd[1,], Gamma.Mean[1,])
+    colnames(output.BG[[cov.names.z[1]]]) <- c("alpha|gamma=1", "SD", "delta")
+    
+    if(p_z > 1){
+        for(i in 2:p_z){
+            nam <- cov.names.z[i]
+            output.BG[[nam]] <- cbind(B.Mean[i,], B.Sd[i,], Gamma.Mean[i,])
+            colnames(output.BG[[nam]]) <- c("alpha|delta=1", "SD", "delta")
+        }
+    }
+    
+    ##
+    cat("\nRegression Coefficients and Inclusion Probabilities for the Binary Component\n")
+    print(output.BG, digits=digits)
+}
 
 
 
@@ -565,6 +687,187 @@ summary.mzipBvs <- function(object, digits=3, ...)
     return(value)
 }
 
+summary.mmzipBvs <- function(object, digits=3, ...)
+{
+    x <- object
+    p_x <- dim(x$B.p)[1]
+    p_z <- dim(x$A.p)[1]
+    q <- dim(x$B.p)[2]
+    q_bin <- dim(x$A.p)[2]
+    
+    nS <- dim(x$B.p)[3]
+    value <- list()
+    cov.names.z <- x$covNames.z
+    cov.names.x <- x$covNames.x
+    out.names <- x$Y.names
+
+    # estimates
+    ##
+    
+    #B and Gamma
+    B <- array(NA, c(p_x, q, nS))
+    Gamma <- array(NA, c(p_x,q, nS))
+    B[,,1:nS] <- x$B.p
+    Gamma[,,1:nS] <- x$gamma_beta.p
+    
+    Gamma.Mean    <- apply(Gamma, c(1,2), mean)
+    B.Mean <- matrix(NA, p_x, q)
+    B.Sd <-    matrix(NA, p_x, q)
+    for(k in 1:p_x)
+    {
+        for(j in 1:q)
+        {
+            if(any(B[k,j,]!=0))
+            {
+                B.Mean[k, j] <- mean(B[k,j,B[k,j,]!=0])
+                B.Sd[k, j] <- sd(B[k,j,B[k,j,]!=0])
+            }else
+            {
+                B.Mean[k, j] <- 0
+                B.Sd[k, j] <- 0
+            }
+        }
+    }
+    rownames(Gamma.Mean) <- cov.names.x
+    rownames(B.Mean) <- cov.names.x
+    rownames(B.Sd) <- cov.names.x
+    
+    colnames(Gamma.Mean) <- out.names
+    colnames(B.Mean) <- out.names
+    colnames(B.Sd) <- out.names
+    
+    output.BG <- list()
+    output.BG[[cov.names.x[1]]] <- cbind(B.Mean[1,], B.Sd[1,], Gamma.Mean[1,])
+    colnames(output.BG[[cov.names.x[1]]]) <- c("beta|gamma=1", "SD", "gamma")
+    
+    if(p_x > 1){
+        for(i in 2:p_x){
+            nam <- cov.names.x[i]
+            output.BG[[nam]] <- cbind(B.Mean[i,], B.Sd[i,], Gamma.Mean[i,])
+            colnames(output.BG[[nam]]) <- c("beta|gamma=1", "SD", "gamma")
+        }
+    }
+    
+    #beta0
+    beta0 <- x$beta0.p
+    
+    beta0.Med <- apply(beta0, 2, median)
+    beta0.Mean <- apply(beta0, 2, mean)
+    beta0.Sd <- apply(beta0, 2, sd)
+    beta0.Ub <- apply(beta0, 2, quantile, prob = 0.975)
+    beta0.Lb <- apply(beta0, 2, quantile, prob = 0.025)
+    
+    output.beta0 <- cbind(beta0.Mean, beta0.Lb, beta0.Ub)
+    dimnames(output.beta0) <- list(out.names, c("beta0", "LL", "UL"))
+    
+    value$BetaGamma <- output.BG
+    value$beta0 <- output.beta0
+    
+    
+    #A and delta
+    B <- array(NA, c(p_z, q, nS))
+    Gamma <- array(NA, c(p_z,q, nS))
+    B[,,1:nS] <- x$A.p
+    Gamma[,,1:nS] <- x$gamma_alpha.p
+    
+    Gamma.Mean    <- apply(Gamma, c(1,2), mean)
+    B.Mean <- matrix(NA, p_z, q)
+    B.Sd <-    matrix(NA, p_z, q)
+    for(k in 1:p_z)
+    {
+        for(j in 1:q)
+        {
+            if(any(B[k,j,]!=0))
+            {
+                B.Mean[k, j] <- mean(B[k,j,B[k,j,]!=0])
+                B.Sd[k, j] <- sd(B[k,j,B[k,j,]!=0])
+            }else
+            {
+                B.Mean[k, j] <- 0
+                B.Sd[k, j] <- 0
+            }
+        }
+    }
+    rownames(Gamma.Mean) <- cov.names.z
+    rownames(B.Mean) <- cov.names.z
+    rownames(B.Sd) <- cov.names.z
+    
+    colnames(Gamma.Mean) <- out.names[1:q_bin]
+    colnames(B.Mean) <- out.names[1:q_bin]
+    colnames(B.Sd) <- out.names[1:q_bin]
+    
+    output.BG <- list()
+    output.BG[[cov.names.z[1]]] <- cbind(B.Mean[1,], B.Sd[1,], Gamma.Mean[1,])
+    colnames(output.BG[[cov.names.z[1]]]) <- c("alpha|gamma=1", "SD", "delta")
+    
+    if(p_z > 1){
+        for(i in 2:p_z){
+            nam <- cov.names.z[i]
+            output.BG[[nam]] <- cbind(B.Mean[i,], B.Sd[i,], Gamma.Mean[i,])
+            colnames(output.BG[[nam]]) <- c("alpha|delta=1", "SD", "delta")
+        }
+    }
+    
+    #alpha0
+    beta0 <- x$alpha0.p
+    
+    beta0.Med <- apply(beta0, 2, median)
+    beta0.Mean <- apply(beta0, 2, mean)
+    beta0.Sd <- apply(beta0, 2, sd)
+    beta0.Ub <- apply(beta0, 2, quantile, prob = 0.975)
+    beta0.Lb <- apply(beta0, 2, quantile, prob = 0.025)
+    
+    output.beta0 <- cbind(beta0.Mean, beta0.Lb, beta0.Ub)
+    dimnames(output.beta0) <- list(out.names, c("alpha0", "LL", "UL"))
+    
+    value$AlphaDelta <- output.BG
+    value$alpha0 <- output.beta0
+    
+    #Sigma_V
+    Sigma.Me <- x$SigmaV_mean
+    Sigma.Sd <- sqrt(x$SigmaV_var)
+    
+    dimnames(Sigma.Me) <- list(c(rep("", q)), c("SigmaV-PM", rep("", q-1)))
+    dimnames(Sigma.Sd) <- list(c(rep("", q)), c("SigmaV-SD", rep("", q-1)))
+    
+    value$SigmaV.PM <- Sigma.Me
+    value$SigmaV.SD <- Sigma.Sd
+    
+    #R
+    Sigma <- array(NA, c(q_bin,q_bin, nS))
+    for(ii in 1:nS)
+    {
+        temp <- (x$m.p[ii,]%*% t(x$m.p[ii,]) + diag(1, q_bin))
+        Sigma[,,ii] <- cov2cor(temp)
+    }
+    
+    Sigma.Med <- apply(Sigma, c(1,2), median)
+    Sigma.Sd <- apply(Sigma, c(1,2), sd)
+    Sigma.Ub <- apply(Sigma, c(1,2), quantile, prob = 0.975)
+    Sigma.Lb <- apply(Sigma, c(1,2), quantile, prob = 0.025)
+    
+    dimnames(Sigma.Med) <- list(c(rep("", q)), c("R-PM", rep("", q-1)))
+    dimnames(Sigma.Sd) <- list(c(rep("", q)), c("R-SD", rep("", q-1)))
+    dimnames(Sigma.Lb) <- list(c(rep("", q)), c("R-LL", rep("", q-1)))
+    dimnames(Sigma.Ub) <- list(c(rep("", q)), c("R-UL", rep("", q-1)))
+    
+    value$R.PM <- Sigma.Med
+    value$R.SD <- Sigma.Sd
+    value$R.LL <- Sigma.Lb
+    value$R.UL <- Sigma.Ub
+
+    #value$setup <- x$setup
+    class(value) <- "summ.mmzipBvs"
+    return(value)
+}
+
+
+
+
+
+
+
+
 ####
 ## PRINT.SUMMARY METHOD
 ####
@@ -662,6 +965,38 @@ print.summ.mzipBvs <- function(x, digits=3, ...)
 }
 
 
+print.summ.mmzipBvs <- function(x, digits=3, ...)
+{
+    
+    cat("\nMultivariate Bayesian Variable Selection \n")
+    
+    cat("\n Model: marginalized multivariate zero-inflated Poisson model (MMZIP) \n")
+    
+    cat("\n#####")
+    
+    ##
+    cat("\nRegression Coefficients and Inclusion Probabilities for the Count Component\n")
+    print(x$BetaGamma, digits=digits)
+    
+    cat("\n#####")
+    
+    ##
+    cat("\nIntercepts for the Count Component\n")
+    print(x$beta0, digits=digits)
+    cat("\n#####")
+    
+    ##
+    cat("\nRegression Coefficients and Inclusion Probabilities for the Binary Component\n")
+    print(x$AlphaDelta, digits=digits)
+    
+    cat("\n#####")
+    
+    ##
+    cat("\nIntercepts for the Binary Component\n")
+    print(x$alpha0, digits=digits)
+    
+    
+}
 
 
 

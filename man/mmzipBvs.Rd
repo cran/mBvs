@@ -1,35 +1,36 @@
-\name{mzipBvs}
-\alias{mzipBvs}
+\name{mmzipBvs}
+\alias{mmzipBvs}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-The function to perform variable selection for conditional multivariate zero-inflated Poisson models
+The function to perform variable selection for marginalized multivariate zero-inflated Poisson models
 }
 \description{
-The function can be used to perform variable selection for conditional multivariate zero-inflated Poisson models.
+The function can be used to perform variable selection for marginalized multivariate zero-inflated Poisson models.
 }
 \usage{
-mzipBvs(Y, lin.pred, data, model = "generalized", offset = NULL, hyperParams, startValues,
- mcmcParams)
+mmzipBvs(Y, lin.pred, data, offset = NULL, zero_cutoff = 0.05, hyperParams,
+ startValues, mcmcParams)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{Y}{
-	a data.frame containing \eqn{q} count outcomes from \code{n} subjects. It is of dimension \eqn{n\times q}.
+a data.frame containing \eqn{q} count outcomes from \code{n} subjects. It is of dimension \eqn{n\times q}.
 }
   \item{lin.pred}{
 a list containing three formula objects: the first formula specifies the \eqn{p_z} covariates for which variable selection is to be performed in the binary component of the model; the second formula specifies the \eqn{p_x} covariates for which variable selection is to be performed in the count part of the model; the third formula specifies the \eqn{p_0} confounders to be adjusted for (but on which variable selection is not to be performed) in the regression analysis.
 }
   \item{data}{
-	a data.frame containing the variables named in the formulas in \code{lin.pred}.
-}
-  \item{model}{
-a character that specifies the type of model: A generalized multivariate Bayesian variable selection method of Lee et al.(2018) can be implemented by setting \code{model="generalized"}. A simpler model that assumes one common variable selection indicator (\eqn{\gamma_{j,k}=\delta_{j,k}}) and the same covariance pattern (\eqn{R=R_V}) for two model parts can be used by setting \code{model="restricted1"}. iii) Another simpler model that assumes the same covariance pattern (\eqn{R=R_V}) but separate variable selection indicators for the binary and count parts of the model can be implemented by setting \code{model="restricted2"}.
+a data.frame containing the variables named in the formulas in \code{lin.pred}.
 }
   \item{offset}{
 an optional numeric vector with an a priori known component to be included as the
 linear predictor in the count part of model.
 }
+  \item{zero_cutoff}{
+Response variable with proportions of zeros less than \code{zero.cutoff} will be removed from the binary model.
+}
   \item{hyperParams}{
+(update this)
 	a list containing lists or vectors for hyperparameter values in hierarchical models. Components include,
     \code{rho0} (degrees of freedom for inverse-Wishart prior for \eqn{\Sigma_V}),
     \code{Psi0} (a scale matrix for inverse-Wishart prior for \eqn{\Sigma_V}),
@@ -55,6 +56,7 @@ linear predictor in the count part of model.
   	a numeric vector containing starting values for model parameters. See Examples below.
 }
   \item{mcmcParams}{
+(update this)
 	a list containing variables required for MCMC sampling. Components include,
 	\code{run} (a list containing numeric values for setting the overall run: 
 	\code{numReps}, total number of scans; \code{thin}, extent of thinning; \code{burninPerc}, the proportion of burn-in).
@@ -67,10 +69,10 @@ linear predictor in the count part of model.
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-\code{mzipBvs} returns an object of class \code{mzipBvs}. \cr}
+\code{mmzipBvs} returns an object of class \code{mmzipBvs}.
+}
 \references{
-Lee, K. H., Coull, B. A., Moscicki, A.-B., Paster, B. J., Starr, J. R. (2020),
-Bayesian variable selection for multivariate zero-inflated models: application to microbiome count data, \emph{Biostatistics}, Volume 21, Issue 3, Pages 499-517. \cr
+update this
 }
 \author{
 Kyu Ha Lee, Brent A. Coull, Jacqueline R. Starr \cr
@@ -86,8 +88,8 @@ Maintainer: Kyu Ha Lee <klee15239@gmail.com>
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 %}
 \examples{
-
 \dontrun{
+
 # loading a data set
 data(simData_mzip)
 Y <- simData_mzip$Y
@@ -99,129 +101,67 @@ q = dim(Y)[2]
 form.bin     <- as.formula(~cov.1)
 form.count    <- as.formula(~cov.1)
 form.adj    <- as.formula(~1)
-lin.pred <- list(form.bin, form.count, form.adj)
+form <- list(form.bin, form.count, form.adj)
 
-Xmat0 <- model.frame(lin.pred[[1]], data=data)
-Xmat1 <- model.frame(lin.pred[[2]], data=data)
-Xmat_adj <- model.frame(lin.pred[[3]], data=data)
-
-p_adj = ncol(Xmat_adj)
-p0 <- ncol(Xmat0) + p_adj
-p1 <- ncol(Xmat1) + p_adj
-
-nonz <- rep(NA, q)
-for(j in 1:q) nonz[j] <- sum(Y[,j] != 0)
+p_adj = dim(model.frame(form[[3]], data=data))[2]
+p0 <- dim(model.frame(form[[1]], data=data))[2] + p_adj
+p1 <- dim(model.frame(form[[2]], data=data))[2] + p_adj
 
 #####################
 ## Hyperparameters ##
 
-## Generalized model
-##
-rho0     <- q + 3 + 1
-Psi0    <- diag(3, q)
+Sigma_me <- 0.5
+Sigma_var <- 1
+rho0 <- 2*Sigma_me^2/Sigma_var+q+3
+psi0 <- Sigma_me*(rho0-q-1)
 
-mu_alpha0     <- 0
-mu_alpha    <- rep(0, q)
+hyperParams_mmzip <- list(v_beta=rep(3, q), omega_beta=rep(0.5, p1-p_adj), 
+a_beta=rep(0.5, p1), b_beta=rep(0.5, p1), mu_beta0=rep(0, q), a_beta0=0.5, b_beta0=0.5, 
+v_alpha=rep(3, q), omega_alpha=rep(0.5, p0-p_adj), 
+a_alpha=rep(0.5, p0), b_alpha=rep(0.5, p0), mu_alpha0=rep(0, q), a_alpha0=0.5, b_alpha0=0.5, 
+rho0=rho0, Psi0=diag(psi0, q), mu_m=rep(0, q), v_m=0.5)
 
-mu_beta0    <- 0
-mu_beta        <- rep(0, q)
-
-a_alpha0    <- 0.7
-b_alpha0     <- 0.7
-
-a_alpha        <- rep(0.7, p0)
-b_alpha     <- rep(0.7, p0)
-
-a_beta0        <- 0.7
-b_beta0     <- 0.7
-
-a_beta        <- rep(0.7, p1)
-b_beta         <- rep(0.7, p1)
-
-v_beta = rep(1, q)
-omega_beta = rep(0.1, p1-p_adj)
-v_alpha = rep(1, q)
-omega_alpha = rep(0.1, p0-p_adj)
-
-##
-hyperParams.gen <- list(rho0=rho0, Psi0=Psi0, mu_alpha0=mu_alpha0, mu_alpha=mu_alpha,
-mu_beta0=mu_beta0, mu_beta=mu_beta, a_alpha0=a_alpha0, b_alpha0=b_alpha0,
-a_alpha=a_alpha, b_alpha=b_alpha, a_beta0=a_beta0, b_beta0=b_beta0,
-a_beta=a_beta, b_beta=b_beta, v_beta=v_beta, omega_beta=omega_beta,
-v_alpha=v_alpha, omega_alpha=omega_alpha)
 
 ###################
 ## MCMC SETTINGS ##
 
-## Setting for the overall run
-##
-numReps    <- 100
-thin       <- 1
-burninPerc <- 0.5
+run <- list(numReps=100, thin=1, burninPerc=0.5)
+storage <- list(storeV=FALSE, storeW=FALSE)
+vs <- list(count=TRUE, binary=TRUE)
+tuning <- list(L_group=100, L_m=20, eps_group=0.00001, eps_m=0.00001, 
+Mvar_group=1, Mvar_m=1, beta_prop_var=0.0001, alpha_prop_var=0.0001)
 
-## Settings for storage
-##
-storeV      <-    TRUE
-storeW      <-    TRUE
+mcmc_mmzip <- list(run=run, storage=storage, vs=vs, tuning=tuning)
 
-## Tuning parameters for specific updates
-##
-##  - Generalized model
-beta0.prop.var    <- 0.5
-alpha.prop.var    <- 0.5
-beta.prop.var    <- 0.5
-V.prop.var    <- 0.05
-
-##
-mcmc.gen <- list(run=list(numReps=numReps, thin=thin, burninPerc=burninPerc),
-storage=list(storeV=storeV, storeW=storeW),
-tuning=list(beta0.prop.var=beta0.prop.var, alpha.prop.var=alpha.prop.var,
-beta.prop.var=beta.prop.var, V.prop.var=V.prop.var))
 
 #####################
-## Starting Values ##
+## Starting Values
 
-## Generalized model
-##
-B <- matrix(0.1, p1, q, byrow = T)
-A <- matrix(0.1, p0, q, byrow = T)
+startValues_mmzip <- initiate_startValues(form, Y, data, "MMZIP")
 
-V <- matrix(rnorm(n*q, 0, 0.1), n, q)
-W <- matrix(rnorm(n*q, 0, 0.1), n, q)
+#####################
+## Other settings
 
-beta0 <- log(as.vector(apply(Y, 2, mean)))
-alpha0 <- log(nonz/n / ((n-nonz)/n))
+offset <- data$total
+zero_cutoff=0.05
 
-Sigma_V    <- matrix(0, q, q)
-diag(Sigma_V) <- 1
+#######################
+## Fitting the MMZIP ##
+#######################
 
-R        <- matrix(0, q, q)
-diag(R) <- 1
+fit.mmzip <- mmzipBvs(Y, form, data, offset, zero_cutoff, hyperParams_mmzip, 
+startValues_mmzip, mcmc_mmzip)
 
-sigSq_alpha0 <- 1
-sigSq_alpha <- rep(1, p0)
-sigSq_beta0 <- 1
-sigSq_beta <- rep(1, p1)
-
-startValues.gen <- list(B=B, A=A, V=V, W=W, beta0=beta0, alpha0=alpha0, R=R,
-sigSq_alpha0=sigSq_alpha0,
-sigSq_alpha=sigSq_alpha, sigSq_beta0=sigSq_beta0, sigSq_beta=sigSq_beta, Sigma_V=Sigma_V)
-
-
-###################################
-## Fitting the generalized model ##
-###################################
-fit.gen <- mzipBvs(Y, lin.pred, data, model="generalized", offset=NULL, hyperParams.gen,
-startValues.gen, mcmc.gen)
-
-print(fit.gen)
-summ.fit.gen <- summary(fit.gen); names(summ.fit.gen)
-summ.fit.gen
+print(fit.mmzip)
+summ.fit.mmzip <- summary(fit.mmzip); names(fit.mmzip)
+summ.fit.mmzip
 
 }
+
+
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
+% R documentation directory (show via RShowDoc("KEYWORDS")):
 \keyword{multivariate Bayesian variable selection}
 \keyword{multivariate zero-inflated count data}
 
